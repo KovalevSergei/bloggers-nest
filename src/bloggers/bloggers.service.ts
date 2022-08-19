@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { BloggersRepository } from './bloggers.repository';
-import { bloggersDBType } from './bloggers.type';
+import { bloggersDBType, bloggersType } from './bloggers.type';
 
 @Injectable()
 export class BloggersService {
@@ -30,5 +30,32 @@ export class BloggersService {
       items2,
     );
     return result;
+  }
+  async createBloggers(
+    name: string,
+    youtubeUrl: string,
+  ): Promise<bloggersType> {
+    const bloggersnew = {
+      id: Number(new Date()).toString(),
+      name: name,
+      youtubeUrl: youtubeUrl,
+    };
+
+    const result = this.bloggersRepository.createBloggers(bloggersnew);
+
+    return result;
+  }
+  async getBloggersById(id: string): Promise<bloggersType | null> {
+    const bloggers = await this.bloggersRepository.getBloggersById(id);
+    if (!bloggers) {
+      return null;
+    } else {
+      const bloggers2 = {
+        id: bloggers.id,
+        name: bloggers.name,
+        youtubeUrl: bloggers.youtubeUrl,
+      };
+      return bloggers2;
+    }
   }
 }
