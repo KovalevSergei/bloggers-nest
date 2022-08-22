@@ -25,10 +25,22 @@
     "@nestjs/core": "^9.0.0",
     "@nestjs/mongoose": "^9.2.0",
     "@nestjs/platform-express": "^9.0.0",
+    "@types/bcrypt": "^5.0.0",
+    "@types/bcrypt-nodejs": "^0.0.31",
+    "@types/cookie-parser": "^1.4.3",
+    "@types/jsonwebtoken": "^8.5.8",
+    "bcrypt": "^5.0.1",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.13.2",
+    "cookie-parser": "^1.4.6",
+    "date-fns": "^2.29.2",
+    "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.5.2",
+    "nodemailer": "^6.7.8",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.2.0"
+    "rxjs": "^7.2.0",
+    "uuidv4": "^6.2.13"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",

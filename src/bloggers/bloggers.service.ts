@@ -1,10 +1,16 @@
 import { Injectable } from '@nestjs/common';
+import { PostsRepository } from 'src/posts/posts.repository';
+//import { PostsService } from 'src/posts/posts.service';
+import { postsDBType, postsreturn, postsType } from 'src/posts/posts.type';
 import { BloggersRepository } from './bloggers.repository';
 import { bloggersDBType, bloggersType } from './bloggers.type';
 
 @Injectable()
 export class BloggersService {
-  constructor(protected bloggersRepository: BloggersRepository) {}
+  constructor(
+    protected bloggersRepository: BloggersRepository,
+    protected postsRepository: PostsRepository, //protected postsService: PostsService,
+  ) {}
   async getBloggers(
     pageSize: number,
     pageNumber: number,
@@ -56,6 +62,112 @@ export class BloggersService {
         youtubeUrl: bloggers.youtubeUrl,
       };
       return bloggers2;
+    }
+  }
+  async deleteBloggersById(id: string): Promise<boolean> {
+    return this.bloggersRepository.deleteBloggersById(id);
+  }
+  async updateBloggers(
+    id: string,
+    name: string,
+    youtubeUrl: string,
+  ): Promise<boolean> {
+    return await this.bloggersRepository.updateBloggers(id, name, youtubeUrl);
+  }
+  async createBloggersPost(
+    bloggerId: string,
+    title: string,
+    shortDescription: string,
+    content: string,
+  ): Promise<postsType | boolean> {
+    const findName = await this.bloggersRepository.getBloggersById(bloggerId);
+
+    if (!findName) {
+      return false;
+    } else {
+      const postsnew = {
+        id: Number(new Date()).toString(),
+        title: title,
+        shortDescription: shortDescription,
+        content: content,
+        bloggerId: bloggerId,
+        bloggerName: findName.name,
+        addedAt: new Date(),
+      };
+
+      const result = await this.postsRepository.createBloggersPost(postsnew);
+
+      return result;
+    }
+  }
+
+  async getBloggersPost(
+    bloggerId: string,
+    pageSize: number,
+    pageNumber: number,
+    //userId: string
+  ): Promise<postsDBType | boolean | postsType[]> {
+    const { items, totalCount } = await this.postsRepository.getBloggersPost2(
+      bloggerId,
+      pageSize,
+      pageNumber,
+    );
+    const userId = '12';
+
+    /*    const postIds = items.map(p => p.id)
+const likes= await this.postsRepository.getLikesBloggersPost(postIds)
+const dislikes=await this.postsRepository.getDislikeBloggersPost(postIds)
+    items.forEach(p => {
+      const postLikes = likes.filter(l => l.postId === p.id)
+
+    }) */
+
+    const items2 = [];
+
+    if (totalCount === 0) {
+      return false;
+    } else {
+      for (let i = 0; i < items.length; i++) {
+        const postItt = items[i];
+        const postId = postItt.id;
+        const likesInformation = await this.postsRepository.getLikeStatus(
+          postId,
+          userId,
+        );
+        const newestLikes = await this.postsRepository.getNewestLikes(postId);
+        const newestLikesMap = newestLikes.map(
+          (v: { addedAt: any; userId: any; login: any }) => ({
+            addedAt: v.addedAt,
+            userId: v.userId,
+            login: v.login,
+          }),
+        );
+        const a = {
+          id: items[i].id,
+          title: items[i].title,
+          shortDescription: items[i].shortDescription,
+          content: items[i].content,
+          bloggerId: items[i].bloggerId,
+          bloggerName: items[i].bloggerName,
+          addedAt: items[i].addedAt,
+          extendedLikesInfo: {
+            likesCount: likesInformation.likesCount,
+            dislikesCount: likesInformation.dislikesCount,
+            myStatus: likesInformation.myStatus,
+            newestLikes: newestLikesMap,
+          },
+        };
+        items2.push(a);
+      }
+      let pagesCount = Number(Math.ceil(totalCount / pageSize));
+      const result: postsDBType = {
+        pagesCount: pagesCount,
+        page: pageNumber,
+        pageSize: pageSize,
+        totalCount: totalCount,
+        items: items2,
+      };
+      return result;
     }
   }
 }
