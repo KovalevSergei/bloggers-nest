@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 import { Connection } from 'mongoose';
-import { refreshToken } from './authorization/auth-type';
+import { RefreshToken, refreshToken } from './authorization/auth-type';
 import { bloggersType } from './bloggers/bloggers.type';
 import { commentsDBType, likeCommentsWithId } from './comments/comments.type';
 import { likePostWithId, postsType } from './posts/posts.type';
@@ -59,9 +59,21 @@ export const likePostsShema = new mongoose.Schema<likePostWithId>({
   myStatus: String,
   addedAt: Date,
 });
-export const tokenSchema = new mongoose.Schema<refreshToken>({
+export const tokenSchema = new mongoose.Schema<RefreshToken>({
   token: String,
 });
+export const ipSchema = new mongoose.Schema({
+  point: String,
+  ip: String,
+  data: Date,
+});
+export type ipType = {
+  point: string;
+  ip: string;
+  data: Date;
+};
+
+export const IP_MODEL = 'ip';
 export const TOKEN_COLLECTION = 'token';
 export const LIKE_POSTS_COLLECTION = 'likePost';
 export const USERS_COLLECTION = 'users';
@@ -69,6 +81,7 @@ export const BLOGGERS_COLLECTION = 'bloggers';
 export const POSTS_COLLECTION = 'posts';
 export const COMMENTS_COLLECTION = 'comments';
 export const LIKE_COMMENTS_COLLECTION = 'likeComments';
+
 export const databaseProviders = [
   {
     provide: 'DATABASE_CONNECTION',

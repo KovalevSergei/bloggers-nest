@@ -13,18 +13,45 @@ import {
   Query,
   Req,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import { Transform, TransformFnParams } from 'class-transformer';
-import { IsIn, IsNotEmpty, isString, Length } from 'class-validator';
+import {
+  IsIn,
+  IsNotEmpty,
+  IsString,
+  isString,
+  IsUrl,
+  Length,
+} from 'class-validator';
 import { NOTFOUND } from 'dns';
 import { CommentsService } from 'src/comments/comments-service';
 import { commentDBTypePagination } from 'src/comments/comments.type';
+import { Auth } from 'src/guards/Auth';
+import { AuthBasic } from 'src/guards/authBasic.guards';
 import { PostsService } from './posts.service';
+import { Request } from 'express';
+import { UsersDBTypeWithId } from 'src/users/users.type';
+import { UserId } from 'src/guards/userId';
 let status = ['None', 'Like', 'Dislike'];
+type RequestWithUser = Request & { user: UsersDBTypeWithId };
 class likeStatus {
   @IsIn(status)
-  status: string;
+  likeStatus: string;
 }
+
+class CommonBlogger {
+  @IsString()
+  name: string;
+  @IsUrl()
+  youtubeUrl: string;
+}
+
+class BloggerWithSurname extends CommonBlogger {
+  @IsString()
+  surname: string;
+}
+
 class UpdatePosts {
   @IsNotEmpty()
   @Transform(({ value }: TransformFnParams) => value?.trim())
@@ -41,23 +68,30 @@ class UpdatePosts {
   @IsNotEmpty()
   bloggerId: string;
 }
+class CommentsUpdate {
+  @IsNotEmpty()
+  @Transform(({ value }: TransformFnParams) => value?.trim())
+  @Length(20, 300)
+  content: string;
+}
 
 @Controller('posts')
 export class PostsController {
   constructor(
     protected postsService: PostsService, //protected commentsServise: CommentsService,
   ) {}
+  @UseGuards(UserId)
   @Get()
   async getPosts(
     @Query('PageNumber') pageNumber: number,
     @Query('PageSize') pageSize: number,
-    // @Req() user: any,
+    @Req() req: RequestWithUser,
   ) {
     const getPosts = await this.postsService.getPosts(
       pageNumber || 1,
       pageSize || 10,
     );
-    const userId = '12';
+    const userId = req.user?.id;
 
     const itemsPost = getPosts.items;
     const items3 = [];
@@ -99,6 +133,7 @@ export class PostsController {
 
     return result;
   }
+  @UseGuards(AuthBasic)
   @Post()
   @HttpCode(201)
   async createPosts(@Body() body: UpdatePosts) {
@@ -118,19 +153,20 @@ export class PostsController {
       });
     }
   }
+  @UseGuards(UserId)
   @Get(':postId')
-  async getpostsId(@Param('postId') postId: string) {
+  async getpostsId(
+    @Param('postId') postId: string,
+    @Req() req: RequestWithUser,
+  ) {
     const postsid = await this.postsService.getpostsId(postId);
-    //const userId = req.user?.id || "1";
+    const userId = req.user?.id;
     if (!postsid) {
       throw new NotFoundException();
     } else {
-      /* const likesInformation = await this.postsServis.getLike(
-        postId,
-        userId
-      );
-      const newestLikes = await this.postsServis.getNewestLikes(
-        req.params.postsId
+      const likesInformation = await this.postsService.getLike(postId, userId);
+      const newestLikes = await this.postsService.getNewestLikes(
+        req.params.postsId,
       );
       const newestLikesMap = newestLikes.map((v) => ({
         addedAt: v.addedAt,
@@ -153,12 +189,10 @@ export class PostsController {
           newestLikes: newestLikesMap,
         },
       };
-     return result;
-    } */
-
-      return postsid;
+      return result;
     }
   }
+  @UseGuards(AuthBasic)
   @Put(':id')
   @HttpCode(204)
   async updatePostsId(@Body() body: UpdatePosts, @Param('id') id: string) {
@@ -175,12 +209,11 @@ export class PostsController {
       throw new BadRequestException({
         errorsMessages: [{ message: 'bloger', field: 'bloggerId' }],
       });
-      //.status(400)
-      //.send({ errorsMessages: [{ message: "bloger", field: "bloggerId" }] });
     } else {
       return postsnew;
     }
   }
+  @UseGuards(AuthBasic)
   @Delete(':id')
   @HttpCode(204)
   async deletePosts(@Param('id') id: string) {
@@ -191,15 +224,15 @@ export class PostsController {
       throw new NotFoundException();
     }
   }
+  @UseGuards(Auth)
   @Post(':postId/comments')
   async createComments(
     @Param('postId') postId: string,
-    @Body('content') content: string,
+    @Body() body2: CommentsUpdate,
+    @Req() req: RequestWithUser,
   ) {
-    //const userId = req.user?.id;
-    //const userLogin = req.user?.accountData.login;
-    const userId = '12';
-    const userLogin = 'pety';
+    const userId = req.user?.id;
+    const userLogin = req.user?.accountData.login;
     if (!userId || !userLogin) {
       throw new UnauthorizedException();
     }
@@ -212,19 +245,20 @@ export class PostsController {
         userId,
         userLogin,
         postId,
-        content,
+        body2.content,
       );
       return newComment;
     }
   }
+  @UseGuards(UserId)
   @Get(':postId/comments')
   async getCommentsPost(
     @Param('postId') postId: string,
     @Query('PageSize') pageSize: number,
     @Query('PageNumber') pageNumber: number,
+    @Req() req: RequestWithUser,
   ) {
-    // const userId = req.user?.id || "1";
-    const userId = '12';
+    const userId = req.user?.id;
     const post = await this.postsService.getpostsId(postId);
     if (!post) {
       throw new NotFoundException();
@@ -234,8 +268,6 @@ export class PostsController {
       pageNumber || 1,
       postId,
     );
-    console.log(getComment);
-
     const Comment = getComment as commentDBTypePagination;
     const items4 = [];
     for (let i = 0; i < Comment.items.length; i++) {
@@ -267,14 +299,16 @@ export class PostsController {
     };
     return result;
   }
+  @UseGuards(Auth)
   @Put(':postId/like-status')
   @HttpCode(204)
   async updateLikePosts(
     @Param('postId') postId: string,
     @Body() body: likeStatus,
+    @Req() req: RequestWithUser,
   ) {
-    //const userId = req.user?.id || "1";
-    const userId = '12';
+    const userId = req.user?.id || '1';
+
     const postById = await this.postsService.getpostsId(postId);
     if (!postById) {
       throw new NotFoundException();
@@ -282,7 +316,7 @@ export class PostsController {
     const result = await this.postsService.updateLikePost(
       postId,
       userId,
-      body.status,
+      body.likeStatus,
     );
     return;
   }

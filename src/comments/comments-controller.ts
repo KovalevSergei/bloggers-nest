@@ -7,18 +7,27 @@ import {
   NotFoundException,
   Param,
   Put,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { IsArray, IsIn } from 'class-validator';
 import { NotFoundError } from 'rxjs';
+import { Auth } from 'src/guards/Auth';
+import { UserFind } from 'src/guards/userFind';
+import { UserId } from 'src/guards/userId';
+import { UsersDBTypeWithId } from 'src/users/users.type';
 import { CommentsService } from './comments-service';
+type RequestWithUser = Request & { user: UsersDBTypeWithId };
 let status2 = ['None', 'Like', 'Dislike'];
 class like {
   @IsIn(status2)
-  status: string;
+  likeStatus: string;
 }
 @Controller('comments')
 export class CommentsController {
   constructor(protected commentsService: CommentsService) {}
+  @UseGuards(Auth)
+  @UseGuards(UserFind)
   @Put(':commentId')
   @HttpCode(204)
   async updateContent(
@@ -33,17 +42,21 @@ export class CommentsController {
     );
     return;
   }
+  @UseGuards(UserId)
   @Get(':commentId')
-  async getCommentById(@Param('commentId') commentId: string) {
+  async getCommentById(
+    @Param('commentId') commentId: string,
+    @Req() req: RequestWithUser,
+  ) {
     const commentById = await this.commentsService.getComment(commentId);
-    //const userId = req.user?.id || "1";
+    const userId = req.user?.id || '1';
 
     if (!commentById) {
       throw new NotFoundException();
     } else {
-      /* const likesInformation = await this.commentsServis.getLike(
-        req.params.commentId,
-        userId
+      const likesInformation = await this.commentsService.getLike(
+        commentId,
+        userId,
       );
       const result = {
         id: commentById.id,
@@ -52,32 +65,36 @@ export class CommentsController {
         userLogin: commentById.userLogin,
         addedAt: commentById.addedAt,
         likesInfo: likesInformation,
-      }; */
-      //res.status(200).json(result);
-      return commentById;
+      };
+
+      return result;
     }
   }
+  @UseGuards(Auth)
+  @UseGuards(UserFind)
   @Delete(':id')
   async deleteComment(@Param('id') id: string) {
     const isdelete = await this.commentsService.deleteComment(id);
     return;
   }
-  @Put('/:commentId/like-status')
+  @UseGuards(Auth)
+  @Put(':commentId/like-status')
   @HttpCode(204)
   async updateLikeComments(
     @Param('commentId') commentId: string,
     @Body() body: like,
+    @Req() req: RequestWithUser,
   ) {
     const commentById = await this.commentsService.getComment(commentId);
     if (!commentById) {
       throw new NotFoundException();
     }
-    //const userId = req.user?.id || '1';
-    const userId = '12';
+    const userId = req.user?.id || '1';
+    console.log(req.user);
     const result = await this.commentsService.updateLikeComments(
       commentId,
       userId,
-      body.status,
+      body.likeStatus,
     );
     return;
   }

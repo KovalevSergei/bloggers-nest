@@ -9,9 +9,14 @@ import {
   Param,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { Transform, TransformFnParams } from 'class-transformer';
 import { IsEmail, isEmail, IsNotEmpty, Length } from 'class-validator';
+
+import { AuthBasic } from 'src/guards/authBasic.guards';
+import { LoginFindDoublicate } from 'src/guards/loginFindDoublicate';
+import { MailFindDoublicate } from 'src/guards/mailFindDoublicate';
 import { UsersService } from './users-service';
 class CreateUser {
   @IsNotEmpty()
@@ -29,12 +34,16 @@ class CreateUser {
 @Controller('users')
 export class UsersController {
   constructor(protected usersService: UsersService) {}
+  @UseGuards(AuthBasic)
+  @UseGuards(MailFindDoublicate)
+  @UseGuards(LoginFindDoublicate)
   @Post()
   @HttpCode(201)
   async createUser(@Body() body: CreateUser) {
     const login: string = body.login;
     const password: string = body.password;
     const email: string = body.email;
+
     const newUser = await this.usersService.createUser(login, email, password);
 
     const user = { id: newUser.id, login: newUser.accountData.login };
@@ -49,9 +58,9 @@ export class UsersController {
       PageNumber || 1,
       PageSize || 10,
     );
-    console.log(getUsers);
     return getUsers;
   }
+  @UseGuards(AuthBasic)
   @Delete(':id')
   @HttpCode(204)
   async deleteUserId(@Param('id') id: string) {

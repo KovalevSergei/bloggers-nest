@@ -4,19 +4,18 @@ import { Model } from 'mongoose';
 import { TOKEN_COLLECTION, USERS_COLLECTION } from 'src/db';
 import { UsersDBType, UsersDBTypeWithId } from './users.type';
 import { ObjectId } from 'mongodb';
-import { refreshToken } from 'src/authorization/auth-type';
+import { RefreshToken, refreshToken } from 'src/authorization/auth-type';
 interface usersReturn {
   items: UsersDBType[];
   totalCount: number;
 }
 @Injectable()
 export class UsersRepository {
-  static tokenModel: any;
   constructor(
     @InjectModel(USERS_COLLECTION)
     private usersModel: Model<UsersDBType>,
     @InjectModel(TOKEN_COLLECTION)
-    private tokenModel: Model<refreshToken>,
+    private tokenModel: Model<RefreshToken>,
   ) {}
   async createUser(newUser: UsersDBType): Promise<UsersDBType> {
     const createUser = await this.usersModel.insertMany({
@@ -77,6 +76,13 @@ export class UsersRepository {
     });
     return user;
   }
+  async findLogin(login: string) {
+    const user = await this.usersModel.findOne({
+      'accountData.login': login,
+    });
+    return user;
+  }
+
   async findByEmail(email: string) {
     const user = await this.usersModel.findOne({
       'accountData.email': email,
@@ -90,13 +96,14 @@ export class UsersRepository {
     );
     return result.modifiedCount === 1;
   }
-  static async refreshTokenSave(token: string) {
-    const result = await this.tokenModel.insertMany({
+  async refreshTokenSave(token: string) {
+    const result = await new this.tokenModel({
       token: token,
       _id: new ObjectId(),
-    });
+    }).save();
     return true;
   }
+
   async refreshTokenFind(token: string): Promise<string | null> {
     const result = await this.tokenModel.findOne({ token: token });
 

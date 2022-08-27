@@ -1,5 +1,5 @@
 import { UsersDBType } from 'src/users/users.type';
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 import { settings } from 'src/setting';
 import { UsersRepository } from 'src/users/users-repository';
 import { Injectable } from '@nestjs/common';
@@ -17,7 +17,7 @@ export class JwtService {
     const tokenRefresh = jwt.sign({ userId: user.id }, settings.JWT_SECRET, {
       expiresIn: '70000000s',
     });
-    await UsersRepository.refreshTokenSave(tokenRefresh);
+    await this.usersRepository.refreshTokenSave(tokenRefresh);
 
     return tokenRefresh;
   }

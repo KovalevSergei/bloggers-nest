@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from 'src/application/jwt-service';
+import { EmailAdapter } from 'src/email/email-service';
 import { UsersRepository } from 'src/users/users-repository';
 import { UsersService } from 'src/users/users-service';
 import { UsersDBType } from 'src/users/users.type';
@@ -11,6 +12,7 @@ export class AuthService {
     protected usersRepository: UsersRepository,
     protected usersService: UsersService,
     protected jwtService: JwtService,
+    protected emailAdapter: EmailAdapter,
   ) {}
   async createUser(
     login: string,
@@ -43,11 +45,11 @@ export class AuthService {
       password,
     );
     if (createResult) {
-      /*  this.emailAdapter.sendEmail(
-            email,
-            "Registration",
-            createResult.emailConfirmation.confirmationCode
-          ); */
+      /*    this.emailAdapter.sendEmail(
+        email,
+        'Registration',
+        createResult.emailConfirmation.confirmationCode,
+      ); */
     }
     return createResult;
   }
@@ -58,9 +60,16 @@ export class AuthService {
     const id = user.id;
     const code = uuidv4();
     await this.usersRepository.updateCode(id, code);
-    //this.emailAdapter.sendEmail(email, "email", code);
+    //this.emailAdapter.sendEmail(email, 'email', code);
 
     return true;
+  }
+  async confirmCode2(code: string): Promise<UsersDBType | boolean> {
+    let user = await this.usersRepository.findByConfirmationCode(code);
+    if (!user) return false;
+    if (user.emailConfirmation.isConfirmed) return false;
+
+    return user;
   }
 
   async confirmCode(code: string): Promise<boolean> {
@@ -73,7 +82,7 @@ export class AuthService {
     return result;
   }
   async refreshTokenSave(token: string): Promise<boolean | string> {
-    let refreshToken = await UsersRepository.refreshTokenSave(token);
+    let refreshToken = await this.usersRepository.refreshTokenSave(token);
     return refreshToken;
   }
   async refreshTokenFind(token: string): Promise<boolean> {
@@ -96,5 +105,20 @@ export class AuthService {
     } else {
       return true;
     }
+  }
+  async findEmail(email: string): Promise<boolean> {
+    let result = this.usersRepository.findByEmail(email);
+    if (!result) {
+      return true;
+    }
+    return false;
+  }
+
+  async findLogin(login: string): Promise<boolean> {
+    let result = this.usersRepository.findByEmail(login);
+    if (!result) {
+      return true;
+    }
+    return false;
   }
 }

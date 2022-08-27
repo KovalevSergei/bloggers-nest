@@ -12,6 +12,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { EmailAdapter } from './email-service';
 
 class EmailClass {
   email: string;
@@ -23,7 +24,7 @@ class EmailClass {
 export class EmailController {
   constructor(protected emailAdapter: EmailAdapter) {}
   async postMessage(@Body() body: EmailClass) {
-    await this.emailAdapter.sendEmail(body.email, body.subject, body.message);
+    //await this.emailAdapter.sendEmail(body.email, body.subject, body.message);
     return;
   }
 }

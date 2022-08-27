@@ -105,14 +105,13 @@ export class BloggersService {
     bloggerId: string,
     pageSize: number,
     pageNumber: number,
-    //userId: string
+    userId: string,
   ): Promise<postsDBType | boolean | postsType[]> {
     const { items, totalCount } = await this.postsRepository.getBloggersPost2(
       bloggerId,
       pageSize,
       pageNumber,
     );
-    const userId = '12';
 
     /*    const postIds = items.map(p => p.id)
 const likes= await this.postsRepository.getLikesBloggersPost(postIds)

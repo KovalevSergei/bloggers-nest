@@ -4,10 +4,12 @@ import {
   Controller,
   Get,
   HttpCode,
+  HttpException,
   Post,
   Req,
   Res,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import { Transform, TransformFnParams } from 'class-transformer';
 import { IsEmail, IsNotEmpty, Length } from 'class-validator';
@@ -18,6 +20,12 @@ import { UsersService } from 'src/users/users-service';
 import { AuthService } from './auth-service';
 import { Request } from 'express';
 import { Response } from 'express';
+import { Auth } from 'src/guards/Auth';
+import { Mistake429 } from 'src/guards/Mistake429';
+import { UsersDBType } from 'src/users/users.type';
+import { truncate } from 'fs';
+import { MailFindDoublicate } from 'src/guards/mailFindDoublicate';
+import { LoginFindDoublicate } from 'src/guards/loginFindDoublicate';
 class AuthBody {
   @IsNotEmpty()
   @Transform(({ value }: TransformFnParams) => value?.trim())
@@ -39,6 +47,8 @@ class CreateUser {
   @Transform(({ value }: TransformFnParams) => value?.trim())
   @Length(6, 20)
   password: string;
+}
+class CreateUserCode {
   @IsNotEmpty()
   @Transform(({ value }: TransformFnParams) => value?.trim())
   code: string;
@@ -50,9 +60,13 @@ export class AuthController {
     protected usersServis: UsersService,
     protected jwtService: JwtService,
   ) {}
+  @UseGuards(Mistake429)
   @Post('login')
   @HttpCode(200)
-  async loginPost(@Body() body: AuthBody, @Res() response: Response) {
+  async loginPost(
+    @Body() body: AuthBody,
+    @Res({ passthrough: true }) response: Response,
+  ) {
     const user = await this.usersServis.getUserByLogin(body.login);
     if (!user) {
       throw new UnauthorizedException();
@@ -76,8 +90,12 @@ export class AuthController {
       secure: true,
       maxAge: 20 * 1000,
     });
+
     return { accessToken: token };
   }
+  @UseGuards(Mistake429)
+  @UseGuards(MailFindDoublicate)
+  @UseGuards(LoginFindDoublicate)
   @Post('registration')
   @HttpCode(204)
   async createUser(@Body() body: CreateUser) {
@@ -89,6 +107,7 @@ export class AuthController {
 
     return;
   }
+  @UseGuards(Mistake429)
   @Post('registration-email-resending')
   @HttpCode(204)
   async registrationEmailResending(@Body() body: CreateUser) {
@@ -106,9 +125,39 @@ export class AuthController {
       });
     }
   }
+  @UseGuards(Mistake429)
   @Post('registration-confirmation')
   @HttpCode(204)
-  async confirmCode(@Body() body: CreateUser) {
+  async confirmCode(@Body() body: CreateUserCode) {
+    const codeReturn = await this.authService.confirmCode2(body.code);
+    if (!codeReturn) {
+      throw new HttpException(
+        {
+          errorsMessages: [
+            {
+              message: 'string',
+              field: 'code',
+            },
+          ],
+        },
+        400,
+      );
+    }
+    const r = codeReturn as UsersDBType;
+    if (r.emailConfirmation.isConfirmed) {
+      throw new HttpException(
+        {
+          errorsMessages: [
+            {
+              message: 'user is confirmed',
+              field: 'code',
+            },
+          ],
+        },
+        400,
+      );
+    }
+
     const result = await this.authService.confirmCode(body.code);
     return;
   }
@@ -155,6 +204,7 @@ export class AuthController {
       throw new UnauthorizedException();
     }
   }
+  @UseGuards(Auth)
   @Get('me')
   async me(@Req() req: Request) {
     const token = req.headers.authorization?.split(' ')[1];

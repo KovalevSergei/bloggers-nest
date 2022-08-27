@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { JwtService } from 'src/application/jwt-service';
 import {
   commentsSchema,
   COMMENTS_COLLECTION,
@@ -11,6 +12,7 @@ import {
   USERS_COLLECTION,
 } from 'src/db';
 import { UsersRepository } from 'src/users/users-repository';
+import { UsersService } from 'src/users/users-service';
 
 import { CommentsController } from './comments-controller';
 import { CommentsRepository } from './comments-repository';
@@ -32,7 +34,13 @@ import { CommentsService } from './comments-service';
     ]),
   ],
   controllers: [CommentsController],
-  providers: [CommentsService, CommentsRepository, UsersRepository],
+  providers: [
+    CommentsService,
+    CommentsRepository,
+    UsersRepository,
+    JwtService,
+    UsersService,
+  ],
   //exports: [],
 })
 export class CommentsModule {}

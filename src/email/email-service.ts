@@ -1,18 +1,21 @@
-import nodemailer from 'nodemailer';
+import * as nodemailer from 'nodemailer';
 import { Injectable } from '@nestjs/common';
-let transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: 'sss3232829@gmail.com',
-    pass: 'ywaxyxzuhsunaukw',
-  },
-});
+class Transport {
+  transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'sss3232829@gmail.com',
+      pass: 'ywaxyxzuhsunaukw',
+    },
+  });
+}
 
 @Injectable()
 export class EmailAdapter {
+  /* constructor(protected transporter: Transport) {}
   async sendEmail(email: string, subject: string, code: string) {
     // send mail with defined transport object
-    let info = await transporter.sendMail({
+    let info = await this.transporter.sendMail({
       from: 'Server <sss3232829@gmail.com>', // sender address
       to: email, // list of receivers
       subject: subject, // Subject line
@@ -25,7 +28,7 @@ export class EmailAdapter {
 
   async sendEmail2(email: string, subject: string, code: string) {
     // send mail with defined transport object
-    let info = await transporter.sendMail({
+    let info = await this.transporter.sendMail({
       from: 'Server <sss3232829@gmail.com>', // sender address
       to: email, // list of receivers
       subject: subject, // Subject line
@@ -33,5 +36,5 @@ export class EmailAdapter {
     });
 
     return info;
-  }
+  } */
 }

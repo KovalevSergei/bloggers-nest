@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { JwtService } from 'src/application/jwt-service';
 import { BloggersModule } from 'src/bloggers/bloggers.module';
 import { BloggersRepository } from 'src/bloggers/bloggers.repository';
 import { CommentsRepository } from 'src/comments/comments-repository';
@@ -21,6 +22,7 @@ import {
   USERS_COLLECTION,
 } from 'src/db';
 import { UsersRepository } from 'src/users/users-repository';
+import { UsersService } from 'src/users/users-service';
 import { PostsController } from './posts.controller';
 import { PostsRepository } from './posts.repository';
 import { PostsService } from './posts.service';
@@ -56,6 +58,8 @@ import { PostsService } from './posts.service';
     BloggersRepository,
     CommentsRepository,
     UsersRepository,
+    JwtService,
+    UsersService,
     //CommentsService,
   ],
   // exports: [PostsRepository],

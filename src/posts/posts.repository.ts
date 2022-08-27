@@ -160,7 +160,6 @@ export class PostsRepository {
     });
 
     result.dislikesCount = disLikes;
-    console.log(result);
     const my = await this.likePostsModel.findOne({
       postsId: postId,
       userId: userId,
