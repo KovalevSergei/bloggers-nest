@@ -73,15 +73,7 @@ export class PostsRepository {
     const result = await this.postsModel.deleteOne({ id: id });
     return result.deletedCount === 1;
   }
-  async createBloggersPost(postnew: postsType): Promise<postsType> {
-    console.log('1234');
-    await this.postsModel.insertMany({
-      ...postnew,
-      _id: new ObjectId(),
-    });
 
-    return postnew;
-  }
   async getBloggersPost(
     bloggerId: string,
     pageSize: number,
@@ -174,13 +166,25 @@ export class PostsRepository {
 
     return result;
   }
-  async getNewestLikes(postId: string): Promise<likePostWithId[]> {
-    const result = await this.likePostsModel
+  async getNewestLikes(postId: string): Promise<likePosts[]> {
+    const result2 = await this.likePostsModel
       .find({ postsId: postId, myStatus: 'Like' })
       .sort({ addedAt: -1 })
       .limit(3)
       .lean();
-    return result || [];
+    const result = [];
+    for (let i = 0; i < result2.length; i++) {
+      const a = {
+        postsId: result2[i].postsId,
+        userId: result2[i].userId,
+        login: result2[i].login,
+        myStatus: result2[i].myStatus,
+        addedAt: result2[i].addedAt,
+      };
+      result.push(a);
+    }
+
+    return result;
   }
   async getLikesBloggersPost(postsId: any): Promise<likePostWithId[]> {
     const result = await this.likePostsModel.find({

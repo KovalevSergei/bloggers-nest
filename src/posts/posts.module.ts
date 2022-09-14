@@ -1,8 +1,11 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtService } from 'src/application/jwt-service';
 import { BloggersModule } from 'src/bloggers/bloggers.module';
-import { BloggersRepository } from 'src/bloggers/bloggers.repository';
+import { BloggersRepository as BloggersMongooseRepository } from 'src/bloggers/bloggers.repository';
+import { BloggersRepository as BloggersSQLRepository } from 'src/bloggers/bloggersSQL.repository';
+
 import { CommentsRepository } from 'src/comments/comments-repository';
 
 import {
@@ -21,10 +24,13 @@ import {
   usersSchema,
   USERS_COLLECTION,
 } from 'src/db';
-import { UsersRepository } from 'src/users/users-repository';
+import { Bloggers, LikePosts, Posts } from 'src/db.sql';
+import { UsersRepository as UsersRepositoryMongo } from 'src/users/users-repository';
+import { UsersRepository as UsersRepositorySQL } from 'src/users/users-repositorySQL';
 import { UsersService } from 'src/users/users-service';
 import { PostsController } from './posts.controller';
-import { PostsRepository } from './posts.repository';
+import { PostsRepository as PostsRepositoryMongo } from './posts.repository';
+import { PostsRepository as PostsRepositorySQL } from './posts.repositorySQL';
 import { PostsService } from './posts.service';
 
 @Module({
@@ -32,6 +38,9 @@ import { PostsService } from './posts.service';
     MongooseModule.forFeature([
       { name: POSTS_COLLECTION, schema: postsSchema },
     ]),
+    TypeOrmModule.forFeature([Posts]),
+    TypeOrmModule.forFeature([Bloggers]),
+    TypeOrmModule.forFeature([LikePosts]),
     MongooseModule.forFeature([
       { name: LIKE_POSTS_COLLECTION, schema: likePostsShema },
     ]),
@@ -54,14 +63,15 @@ import { PostsService } from './posts.service';
   controllers: [PostsController],
   providers: [
     PostsService,
-    PostsRepository,
-    BloggersRepository,
+    PostsRepositoryMongo,
+    BloggersMongooseRepository,
+    BloggersSQLRepository,
     CommentsRepository,
-    UsersRepository,
+    PostsRepositorySQL,
+    UsersRepositoryMongo,
+    UsersRepositorySQL,
     JwtService,
     UsersService,
-    //CommentsService,
   ],
-  // exports: [PostsRepository],
 })
 export class PostsModule {}

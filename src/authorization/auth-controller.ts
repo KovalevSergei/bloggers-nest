@@ -80,7 +80,6 @@ export class AuthController {
     );
     if (!areCredentialsCorrect) {
       throw new UnauthorizedException();
-      return;
     }
     const token = await this.jwtService.createJWT(user);
     const refreshToken = await this.jwtService.createJWTrefresh(user);

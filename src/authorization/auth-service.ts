@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from 'src/application/jwt-service';
 import { EmailAdapter } from 'src/email/email-service';
-import { UsersRepository } from 'src/users/users-repository';
+import { UsersRepository } from 'src/users/users-repositorySQL';
 import { UsersService } from 'src/users/users-service';
 import { UsersDBType } from 'src/users/users.type';
 import { v4 as uuidv4 } from 'uuid';
@@ -45,11 +45,11 @@ export class AuthService {
       password,
     );
     if (createResult) {
-      /*    this.emailAdapter.sendEmail(
+      this.emailAdapter.sendEmail(
         email,
         'Registration',
         createResult.emailConfirmation.confirmationCode,
-      ); */
+      );
     }
     return createResult;
   }
@@ -60,7 +60,7 @@ export class AuthService {
     const id = user.id;
     const code = uuidv4();
     await this.usersRepository.updateCode(id, code);
-    //this.emailAdapter.sendEmail(email, 'email', code);
+    this.emailAdapter.sendEmail(email, 'email', code);
 
     return true;
   }
@@ -115,7 +115,7 @@ export class AuthService {
   }
 
   async findLogin(login: string): Promise<boolean> {
-    let result = this.usersRepository.findByEmail(login);
+    let result = this.usersRepository.FindUserLogin(login);
     if (!result) {
       return true;
     }

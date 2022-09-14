@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { BloggersRepository } from 'src/bloggers/bloggers.repository';
+import { BloggersRepository } from 'src/bloggers/bloggersSQL.repository';
 import { CommentsRepository } from 'src/comments/comments-repository';
 import {
   commentDBTypePagination,
@@ -8,7 +8,7 @@ import {
 } from 'src/comments/comments.type';
 import { UsersRepository } from 'src/users/users-repository';
 import { UsersDBType } from 'src/users/users.type';
-import { PostsRepository } from './posts.repository';
+import { PostsRepository } from './posts.repositorySQL';
 import {
   likePosts,
   likePostWithId,
@@ -58,7 +58,7 @@ export class PostsService {
     bloggerId: string,
   ): Promise<postsType | boolean> {
     const nameblog = await this.bloggersRepository.getBloggersById(bloggerId);
-
+    console.log(nameblog);
     if (nameblog) {
       const postnew = {
         id: Number(new Date()).toString(),
@@ -221,7 +221,7 @@ export class PostsService {
     const result = await this.postsRepository.getLikeStatus(postId, userId);
     return result;
   }
-  async getNewestLikes(postId: string): Promise<likePostWithId[]> {
+  async getNewestLikes(postId: string): Promise<likePosts[]> {
     const result = await this.postsRepository.getNewestLikes(postId);
     return result;
   }

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtService } from 'src/application/jwt-service';
 import {
   commentsSchema,
@@ -11,15 +12,18 @@ import {
   usersSchema,
   USERS_COLLECTION,
 } from 'src/db';
-import { UsersRepository } from 'src/users/users-repository';
+import { Comments, LikeComments, Users } from 'src/db.sql';
+import { UsersRepository } from 'src/users/users-repositorySQL';
 import { UsersService } from 'src/users/users-service';
 
 import { CommentsController } from './comments-controller';
-import { CommentsRepository } from './comments-repository';
+import { CommentsRepository } from './comments-repositorySQL';
 import { CommentsService } from './comments-service';
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([Comments]),
+    TypeOrmModule.forFeature([LikeComments]),
     MongooseModule.forFeature([
       { name: COMMENTS_COLLECTION, schema: commentsSchema },
     ]),

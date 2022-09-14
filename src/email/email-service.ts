@@ -1,6 +1,6 @@
 import * as nodemailer from 'nodemailer';
 import { Injectable } from '@nestjs/common';
-class Transport {
+export class Transport {
   transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -12,7 +12,14 @@ class Transport {
 
 @Injectable()
 export class EmailAdapter {
-  /* constructor(protected transporter: Transport) {}
+  transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'sss3232829@gmail.com',
+      pass: 'ywaxyxzuhsunaukw',
+    },
+  });
+  //constructor(protected transporter: Transport) {}
   async sendEmail(email: string, subject: string, code: string) {
     // send mail with defined transport object
     let info = await this.transporter.sendMail({
@@ -36,5 +43,5 @@ export class EmailAdapter {
     });
 
     return info;
-  } */
+  }
 }

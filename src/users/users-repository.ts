@@ -76,12 +76,6 @@ export class UsersRepository {
     });
     return user;
   }
-  async findLogin(login: string) {
-    const user = await this.usersModel.findOne({
-      'accountData.login': login,
-    });
-    return user;
-  }
 
   async findByEmail(email: string) {
     const user = await this.usersModel.findOne({

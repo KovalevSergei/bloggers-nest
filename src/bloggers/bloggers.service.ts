@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PostsRepository } from 'src/posts/posts.repository';
 //import { PostsService } from 'src/posts/posts.service';
 import { postsDBType, postsreturn, postsType } from 'src/posts/posts.type';
-import { BloggersRepository } from './bloggers.repository';
+import { BloggersRepository } from './bloggersSQL.repository';
 import { bloggersDBType, bloggersType } from './bloggers.type';
 
 @Injectable()
@@ -53,6 +53,7 @@ export class BloggersService {
   }
   async getBloggersById(id: string): Promise<bloggersType | null> {
     const bloggers = await this.bloggersRepository.getBloggersById(id);
+    console.log(bloggers);
     if (!bloggers) {
       return null;
     } else {
@@ -95,7 +96,7 @@ export class BloggersService {
         addedAt: new Date(),
       };
 
-      const result = await this.postsRepository.createBloggersPost(postsnew);
+      const result = await this.postsRepository.createPosts(postsnew);
 
       return result;
     }
@@ -107,7 +108,7 @@ export class BloggersService {
     pageNumber: number,
     userId: string,
   ): Promise<postsDBType | boolean | postsType[]> {
-    const { items, totalCount } = await this.postsRepository.getBloggersPost2(
+    const { items, totalCount } = await this.postsRepository.getBloggersPost(
       bloggerId,
       pageSize,
       pageNumber,

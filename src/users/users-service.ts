@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UsersRepository } from './users-repository';
+import { UsersRepository } from './users-repositorySQL';
 import { UsersDBType, UsersDBTypeWithId, usersGetDBType } from './users.type';
 //import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';

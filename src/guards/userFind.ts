@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { UsersDBTypeWithId } from 'src/users/users.type';
-import { CommentsRepository } from 'src/comments/comments-repository';
+import { CommentsRepository } from 'src/comments/comments-repositorySQL';
 type RequestWithUser = Request & { user: UsersDBTypeWithId };
 @Injectable()
 export class UserFind implements CanActivate {
