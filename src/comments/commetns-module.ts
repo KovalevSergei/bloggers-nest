@@ -12,7 +12,8 @@ import {
   usersSchema,
   USERS_COLLECTION,
 } from 'src/db';
-import { Comments, LikeComments, Users } from 'src/db.sql';
+import { Comments, LikeComments } from 'src/db.sql';
+//import { Comments, LikeComments, Users } from 'src/db.sql';
 import { UsersRepository } from 'src/users/users-repositorySQL';
 import { UsersService } from 'src/users/users-service';
 

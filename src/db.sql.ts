@@ -5,8 +5,11 @@ import {
   PrimaryGeneratedColumn,
   OneToMany,
   ManyToOne,
+  JoinColumn,
 } from 'typeorm';
-import { postsDBType } from './posts/posts.type';
+import { bloggersDBType } from './bloggers/bloggers.type';
+import { likeComments } from './comments/comments.type';
+import { likePosts, postsDBType } from './posts/posts.type';
 @Entity()
 export class Bloggers {
   @PrimaryColumn()
@@ -16,8 +19,8 @@ export class Bloggers {
   @Column()
   youtubeUrl: string;
 
-  /*   @OneToMany(() => Post, (post) => post.blogger)
-  post: Post[]; */
+  @OneToMany(() => Posts, (posts) => posts.blogger)
+  posts: Posts[];
 }
 
 @Entity()
@@ -30,47 +33,17 @@ export class Posts {
   shortDescription: string;
   @Column()
   content: string;
-  @Column()
-  bloggerId: string;
-  @Column()
-  bloggerName: string;
-  @Column()
+  /*  @ManyToOne(() => Bloggers)
+  blogger: Bloggers; */
+  @Column({ nullable: false })
   addedAt: Date;
-
-  /* @ManyToOne(() => Blogger, (blogger) => blogger.post)
-  blogger: Blogger; */
+  @ManyToOne(() => Bloggers, (blogger) => blogger.posts)
+  blogger: Bloggers;
+  @OneToMany(() => Comments, (comment) => comment.post)
+  comment: Comments[];
+  @OneToMany(() => LikePosts, (likePosts) => likePosts.posts)
+  likePosts: likePosts[];
 }
-
-@Entity()
-export class LikeComments {
-  @PrimaryColumn()
-  commentsId: string;
-  @Column()
-  userId: string;
-  @Column()
-  myStatus: string;
-  @Column()
-  addedAt: Date;
-  @Column()
-  login: string;
-}
-
-@Entity()
-export class Comments {
-  @PrimaryColumn()
-  id: string;
-  @Column()
-  content: string;
-  @Column()
-  userId: string;
-  @Column()
-  userLogin: string;
-  @Column()
-  addedAt: Date;
-  @Column()
-  postId: string;
-}
-
 @Entity()
 export class Users {
   @PrimaryColumn()
@@ -91,14 +64,43 @@ export class Users {
   expirationDate: Date;
   @Column()
   isConfirmed: boolean;
+  @OneToMany(() => Comments, (comment) => comment.user)
+  comment: Comments[];
+  @OneToMany(() => LikeComments, (likeComments) => likeComments.users)
+  likeComments: LikeComments[];
+  @OneToMany(() => LikePosts, (likePosts) => likePosts.users)
+  likePosts: LikePosts[];
 }
-
 @Entity()
 export class Token {
-  @PrimaryGeneratedColumn()
-  id: number;
-  @Column()
+  @PrimaryColumn()
   token: string;
+}
+@Entity()
+export class Comments {
+  @PrimaryColumn()
+  id: string;
+  @Column()
+  content: string;
+  @Column()
+  addedAt: Date;
+  @ManyToOne(() => Posts, (post) => post.comment)
+  post: Posts;
+  @ManyToOne(() => Users, (user) => user.comment)
+  user: Users;
+  @OneToMany(() => LikeComments, (likeComments) => likeComments.comments)
+  likeComments: likeComments[];
+}
+@Entity()
+export class LikeComments {
+  @Column()
+  myStatus: string;
+  @PrimaryColumn()
+  addedAt: Date;
+  @ManyToOne(() => Comments, (comments) => comments.likeComments)
+  comments: Comments;
+  @ManyToOne(() => Users, (users) => users.likeComments)
+  users: Users;
 }
 
 @Entity()
@@ -113,4 +115,8 @@ export class LikePosts {
   addedAt: Date;
   @Column()
   login: string;
+  @ManyToOne(() => Users, (users) => users.likePosts)
+  users: Users;
+  @ManyToOne(() => Posts, (posts) => posts.likePosts)
+  posts: Posts;
 }

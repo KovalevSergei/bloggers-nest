@@ -15,7 +15,7 @@ export class UserId implements CanActivate {
 
     if (!req.headers.authorization) {
       req.user = null;
-      console.log(req.user);
+
       return true;
     }
     const token = req.headers.authorization?.split(' ')[1];

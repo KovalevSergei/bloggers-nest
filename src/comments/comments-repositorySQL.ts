@@ -12,6 +12,7 @@ import {
 import { ObjectId } from 'mongodb';
 import { DataSource } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
+import { Comments, LikeComments } from 'src/db.sql';
 interface commentReturn {
   items: commentsDBType[];
   totalCount: number;
@@ -24,45 +25,68 @@ export class CommentsRepository {
     commentId: string,
     //userId: string,
   ): Promise<boolean | null> {
-    await this.dataSource.query(
-      `UPDATE "comments" SET "content"=$1 WHERE id=$2`,
-      [content, commentId],
-    );
-    return true;
+    const a = await this.dataSource
+      .createQueryBuilder()
+      .update(Comments)
+      .set({
+        content: content,
+      })
+      .where('comments.id=:commentId', { commentId })
+      .execute();
+
+    return a.affected === 1;
   }
   async getComment(id: string): Promise<commentsDBType | null> {
-    const result = await this.dataSource.query(
-      `SELECT id,content,"userId","userLogin","addedAt" FROM "comments" WHERE id=$1`,
-      [id],
-    );
-    return result[0];
+    const result = await this.dataSource
+      .getRepository(Comments)
+      .createQueryBuilder('comments')
+      .leftJoinAndSelect('comments.user', 'user')
+      .leftJoinAndSelect('comments.post', 'post')
+      .where('comments.id=:id', { id })
+      .getMany();
+    if (result.length === 0) {
+      return null;
+    }
+    const a = {
+      id: result[0].id,
+      postId: result[0].post.id,
+      content: result[0].content,
+      userId: result[0].user.id,
+      userLogin: result[0].user.login,
+      addedAt: result[0].addedAt,
+    };
+
+    /*  `SELECT comments.id,content,"userId",login as 
+      "userLogin","addedAt" FROM "comments"
+      LEFT JOIN "users"
+      ON users.id=comments."userId" 
+      WHERE comments.id=$1`,
+      [id], */
+
+    return a;
   }
   async deleteComment(id: string): Promise<boolean | null> {
-    const commentInstance = await this.dataSource.query(
-      `SELECT * FROM "comments" WHERE id=$1`,
-      [id],
-    );
-    if (commentInstance.length === 0) {
-      return false;
-    }
+    const commentInstance = await this.dataSource
+      .createQueryBuilder()
+      .delete()
+      .from(Comments)
+      .where('comments.id=:id', { id })
+      .execute();
 
-    await this.dataSource.query(`DELETE FROM "comments" WHERE id=$1`, [id]);
-    return true;
+    return commentInstance.affected === 1;
   }
   async createComment(comment: commentsDBPostIdType): Promise<commentsDBType2> {
-    await this.dataSource.query(
-      `INSERT INTO
-       "comments"("id","content","userId","userLogin","addedAt","postId") 
-      VALUES ($1,$2,$3,$4,$5,$6)`,
-      [
-        comment.id,
-        comment.content,
-        comment.userId,
-        comment.userLogin,
-        comment.addedAt,
-        comment.postId,
-      ],
-    );
+    await this.dataSource
+      .createQueryBuilder()
+      .where('users.id=:userId', { userId: comment.userId })
+      .where('posts.id=:postId', { postId: comment.postId })
+      .insert()
+      .into(Comments)
+      .values({
+        id: comment.id,
+        content: comment.content,
+        addedAt: comment.addedAt,
+      });
     return {
       id: comment.id,
       content: comment.content,
@@ -76,21 +100,55 @@ export class CommentsRepository {
     pageNumber: number,
     postId: string,
   ): Promise<commentReturn> {
-    const totalCount = await this.dataSource.query(
-      `SELECT COUNT(id) FROM "comments"`,
-    );
+    const totalCount = await this.dataSource
+      .getRepository(Comments)
+      .createQueryBuilder('comments')
+      .getCount();
 
-    const items = await this.dataSource.query(
-      `SELECT id,content,"userId","userLogin","addedAt" FROM "comments" as v
+    const items = await this.dataSource
+      .getRepository(Comments)
+      .createQueryBuilder('comments')
+      .leftJoinAndSelect('post.comment', 'post')
+      .leftJoinAndSelect('user.comment', 'comment')
+      .where('comments.post.id=:postId', { postId })
+      .limit(pageSize)
+      .offset((pageNumber - 1) * pageSize)
+      .getMany();
+
+    const a = items.map((v) => ({
+      id: v.id,
+      postId: v.post.id,
+      content: v.content,
+      userId: v.user.id,
+      userLogin: v.user.login,
+      addedAt: v.addedAt,
+    }));
+
+    /*  query(
+      `SELECT id,content,"userId",login "userLogin","addedAt" FROM "comments" as v
+      LEFT JOIN "users"
+      ON users.id=v."userId"
     WHERE v."postId"=$3
     ORDER BY id
     LIMIT $1 OFFSET (($2-1)*$2)`,
       [pageSize, pageNumber, postId],
-    );
-    return { items: items, totalCount: +totalCount[0].count };
+    ); */
+    return { items: a, totalCount: totalCount };
   }
   async createLikeStatus(likeCommentForm: likeComments): Promise<boolean> {
-    await this.dataSource.query(
+    await this.dataSource
+      .createQueryBuilder()
+      .where('users.id=:id', { id: likeCommentForm.userId })
+      .where('coometns.id=:id', { id: likeCommentForm.commentsId })
+      .insert()
+      .into(LikeComments)
+      .values({
+        addedAt: likeCommentForm.addedAt,
+        myStatus: likeCommentForm.myStatus,
+      })
+      .execute();
+
+    /*     query(
       `INSERT INTO
 "likecomments"("commentsId","userId","myStatus","addedAt","login") 
 VALUES ($1,$2,$3,$4,$5,$6)`,
@@ -101,22 +159,54 @@ VALUES ($1,$2,$3,$4,$5,$6)`,
         likeCommentForm.addedAt,
         likeCommentForm.login,
       ],
-    );
+    ); */
     return true;
   }
   async findLikeStatus(
     commentsId: string,
     userId: string,
   ): Promise<likeCommentsWithId | null> {
-    const result = await this.dataSource.query(
-      `SELECT * FROM "likecomments 
+    const result = await this.dataSource
+      .getRepository(LikeComments)
+      .createQueryBuilder('likeComments')
+      .leftJoinAndSelect('likeComments:comments', 'commetns')
+      .where('likeComments.comments.id=:commentsId', { commentsId })
+      .leftJoinAndSelect('likeComments.users', 'users')
+      .where('likeComments.users.id=:userId', { userId })
+      .getMany();
+    if (result.length === 0) {
+      return null;
+    }
+    const v = result;
+    const res = {
+      _id: new ObjectId(),
+      commentsId: v[0].comments.id,
+      addedAt: v[0].addedAt,
+      myStatus: v[0].myStatus,
+      login: v[0].users.login,
+      userId: v[0].users.id,
+    };
+
+    /*   query(
+      `SELECT likecomments*,login FROM "likecomments" 
+      LEFT JOIN "users"
+      ON  users.id=likecomments."userId"
     WHERE "commentsId"=$1 AND "userId"=$2`,
       [commentsId, userId],
-    );
-    return result;
+    ); */
+    return res;
   }
   async deleteLike(commentsId: string, userId: string): Promise<boolean> {
-    const result = await this.dataSource.query(
+    const result = await this.dataSource
+      .createQueryBuilder()
+      .delete()
+      .from(LikeComments)
+      .where('comments.id=:commentsId', { commentsId })
+      .where('users.id=:userId', { userId })
+      .execute();
+
+    /*  
+    query(
       `SELECT * FROM "likecomments" 
     WHERE "commentsId"=$1 AND "userId"=$2`,
       [commentsId, userId],
@@ -129,8 +219,8 @@ VALUES ($1,$2,$3,$4,$5,$6)`,
       `DELETE FROM "likecomments" 
     WHERE "commentsId"=$1 AND "userId"=$2`,
       [commentsId, userId],
-    );
-    return true;
+    ); */
+    return result.affected === 1;
   }
   async getLikeStatus(
     commentsId: string,
@@ -141,32 +231,57 @@ VALUES ($1,$2,$3,$4,$5,$6)`,
     myStatus: string;
   }> {
     const result = { likesCount: 0, dislikesCount: 0, myStatus: 'None' };
-    const likesCount = await this.dataSource.query(
-      `SELECT COUNT(id) as res2 FROM "likecomments" WHERE 
+    const likesCount = await this.dataSource
+      .getRepository(LikeComments)
+      .createQueryBuilder('likeComments')
+      .where('likeComments.comments.id=:commentsId', { commentsId })
+      .where('likeComments.myStatus=:a', { a: 'Like' })
+      .getCount();
+
+    /* query(
+      `SELECT COUNT(id) as res2 FROM "likecomments" 
+      WHERE 
       commentsId= $1 and
       myStatus='Like'`,
       [commentsId],
-    );
-    result.likesCount = +likesCount[0].res2;
-    const disLikes = await this.dataSource.query(
-      `SELECT COUNT(id) as res3 FROM "likecomments" WHERE 
+    ); */
+    result.likesCount = likesCount;
+    const disLikes = await this.dataSource
+      .getRepository(LikeComments)
+      .createQueryBuilder('likeComments')
+      .where('likeComments.comments.id=:commentsId', { commentsId })
+      .where('likeComments.myStatus=:a', { a: 'Dislike' })
+      .getCount();
+
+    /*    query(
+      `SELECT COUNT(id) as res3 FROM "likecomments" 
+      WHERE 
         commentsId= $1 and
         myStatus='Dislike'`,
       [commentsId],
-    );
-    result.dislikesCount = +disLikes[0].res3;
-    const my = await this.dataSource.query(
+    ); */
+    result.dislikesCount = disLikes;
+    const my = await this.dataSource
+      .getRepository(LikeComments)
+      .createQueryBuilder('likeComments')
+      .where('likeComments.comments.id=:commentsId', { commentsId })
+      .where('likeComments.user.id=:userId', { userId })
+
+      .getMany();
+
+    /* 
+    query(
       `SELECT * FROM "likecomments" WHERE 
           "commentsId"= $1 and
           "userId"=$2`,
       [commentsId, userId],
     );
-
+ */
     if (my.length === 0) {
       return result;
     } else {
       const a = my;
-      result.myStatus = a.myStatus;
+      result.myStatus = a[0].myStatus;
     }
 
     return result;

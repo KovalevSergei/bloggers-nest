@@ -6,7 +6,7 @@ export type commentsDBType = {
   content: string;
   userId: string;
   userLogin: string;
-  addedAt: string;
+  addedAt: Date;
 };
 export type commentsDBType2 = {
   id: string;

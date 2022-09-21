@@ -7,6 +7,15 @@ import { AppService } from './app.service';
 import { AuthModule } from './authorization/auth-module';
 import { BloggersModule } from './bloggers/bloggers.module';
 import { CommentsModule } from './comments/commetns-module';
+import {
+  Bloggers,
+  Comments,
+  LikeComments,
+  LikePosts,
+  Posts,
+  Token,
+  Users,
+} from './db.sql';
 import { PostsModule } from './posts/posts.module';
 import { UsersModule } from './users/users-module';
 
@@ -19,8 +28,16 @@ import { UsersModule } from './users/users-module';
       username: 'postgres',
       password: '123',
       database: 'postgres',
-      autoLoadEntities: true,
-      synchronize: true,
+      entities: [
+        Posts,
+        Bloggers,
+        Users,
+        Token,
+        Comments,
+        LikeComments,
+        LikePosts,
+      ],
+      synchronize: false,
       //  logging: ['query'],
     }),
     MongooseModule.forRoot('mongodb://localhost/nest'),

@@ -44,6 +44,7 @@ export class AuthService {
       email,
       password,
     );
+
     if (createResult) {
       this.emailAdapter.sendEmail(
         email,

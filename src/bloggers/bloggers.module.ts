@@ -14,8 +14,8 @@ import {
   usersSchema,
   USERS_COLLECTION,
 } from 'src/db';
-import { Bloggers } from 'src/db.sql';
-import { PostsRepository } from 'src/posts/posts.repository';
+
+import { PostsRepository } from 'src/posts/posts.repositorySQL';
 import { UsersModule } from 'src/users/users-module';
 import { UsersRepository } from 'src/users/users-repositorySQL';
 import { UsersService } from 'src/users/users-service';
@@ -24,6 +24,7 @@ import { BloggersController } from './bloggers.controller';
 import { BloggersRepository as BloggersMongooseRepository } from './bloggers.repository';
 import { BloggersRepository as BloggersSQLRepository } from './bloggersSQL.repository';
 import { BloggersService } from './bloggers.service';
+import { Bloggers } from 'src/db.sql';
 
 @Module({
   imports: [

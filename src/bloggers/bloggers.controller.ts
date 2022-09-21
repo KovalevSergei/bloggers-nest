@@ -158,6 +158,7 @@ export class BloggersController {
     @Query('PageNumber') PageNumber: number,
     @Param('id') id: string,
   ) {
+    console.log('PROVERKA');
     const userId = req.user?.id;
 
     const getPostBlogger = await this.bloggersService.getBloggersPost(

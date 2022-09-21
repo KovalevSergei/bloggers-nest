@@ -68,6 +68,7 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     const user = await this.usersServis.getUserByLogin(body.login);
+
     if (!user) {
       throw new UnauthorizedException();
     }
@@ -104,7 +105,7 @@ export class AuthController {
       body.password,
     );
 
-    return;
+    return user;
   }
   @UseGuards(Mistake429)
   @Post('registration-email-resending')

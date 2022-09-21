@@ -3,7 +3,6 @@ import { UsersDBType, UsersDBTypeWithId } from './users.type';
 import { ObjectId } from 'mongodb';
 import { DataSource } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { Token, Users } from 'src/db.sql';
 interface usersReturn {
   items: UsersDBType[];
   totalCount: number;
@@ -13,38 +12,42 @@ export class UsersRepository {
   constructor(@InjectDataSource() public dataSource: DataSource) {}
 
   async createUser(newUser: UsersDBType): Promise<UsersDBType> {
-    const createUser = await this.dataSource
-      .createQueryBuilder()
-      .insert()
-      .into(Users)
-      .values({
-        id: newUser.id,
-        login: newUser.accountData.login,
-        email: newUser.accountData.email,
-        passwordHash: newUser.accountData.passwordHash,
-        passwordSalt: newUser.accountData.passwordSalt,
-        createdAt: newUser.accountData.createdAt,
-        confirmationCode: newUser.emailConfirmation.confirmationCode,
-        expirationDate: newUser.emailConfirmation.expirationDate,
-        isConfirmed: newUser.emailConfirmation.isConfirmed,
-      })
-      .execute();
+    const createUser = await this.dataSource.query(
+      `INSERT INTO users (
+        id,
+        login,
+        email,
+        "passwordHash",
+    "passwordSalt",
+    "createdAt",
+    "confirmationCode",
+    "expirationDate",
+    "isConfirmed") 
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+      [
+        newUser.id,
+        newUser.accountData.login,
+        newUser.accountData.email,
+        newUser.accountData.passwordHash,
+        newUser.accountData.passwordSalt,
+        newUser.accountData.createdAt,
+        newUser.emailConfirmation.confirmationCode,
+        newUser.emailConfirmation.expirationDate,
+        newUser.emailConfirmation.isConfirmed,
+      ],
+    );
 
     return newUser;
   }
   async getUsers(PageSize: number, PageNumber: number): Promise<usersReturn> {
-    const totalCount = await this.dataSource
-      .getRepository(Users)
-      .createQueryBuilder('users')
-      .getCount();
-    const users = await this.dataSource
-      .getRepository(Users)
-      .createQueryBuilder('users')
-      .limit(PageSize)
-      .offset((PageNumber - 1) * PageSize)
-      .getMany();
+    const totalCount = await this.dataSource.query(
+      `SELECT COUNT(id) FROM "users"`,
+    );
+    const users = await this.dataSource.query(
+      `SELECT * FROM "users" LIMIT $1 OFFSET(($2-1)*$1)`,
+      [PageSize, PageNumber],
+    );
     const items = [];
-
     for (let i = 0; i < users.length; i++) {
       const a = {
         id: users[i].id,
@@ -63,26 +66,28 @@ export class UsersRepository {
       };
       items.push(a);
     }
-    return { totalCount: totalCount, items: items };
+    return { totalCount: +totalCount[0].count, items: items };
   }
   async deleteUsersId(id: string): Promise<boolean> {
-    const user = await this.dataSource
-      .createQueryBuilder()
-      .delete()
-      .from(Users)
-      .where('users.id=:id', { id })
-      .execute();
+    const user = await this.dataSource.query(
+      `SELECT * FROM "users" WHERE "id"=$1 `,
+      [id],
+    );
+    if (user.length === 0) {
+      return false;
+    }
 
-    return user.raw === 1;
+    const result = await this.dataSource.query(
+      `DELETE FROM "users" WHERE "id"=$1`,
+      [id],
+    );
+    return true;
   }
   async userGetLogin(login: string): Promise<boolean> {
-    const usersFind = await this.dataSource
-      .getRepository(Users)
-      .createQueryBuilder('users')
-      .select()
-      .where('users.login=:login', { login })
-      .getMany();
-
+    const usersFind = await this.dataSource.query(
+      `SELECT * FROM "users" WHERE "login"=$1`,
+      [login],
+    );
     if (usersFind.length > 0) {
       return true;
     } else {
@@ -90,16 +95,14 @@ export class UsersRepository {
     }
   }
   async FindUserLogin(login: string): Promise<UsersDBTypeWithId | null> {
-    const users = await this.dataSource
-      .getRepository(Users)
-      .createQueryBuilder('users')
-      .select()
-      .where('users.login=:login', { login })
-      .getMany();
+    const users = await this.dataSource.query(
+      `SELECT *FROM "users" WHERE "login"=$1`,
+      [login],
+    );
     if (users.length === 0) {
       return null;
     }
-    const result = {
+    const result: UsersDBTypeWithId = {
       _id: new ObjectId(),
       id: users[0].id,
       accountData: {
@@ -118,13 +121,10 @@ export class UsersRepository {
     return result;
   }
   async findUserById(id: string): Promise<UsersDBTypeWithId | null> {
-    const users = await this.dataSource
-      .getRepository(Users)
-      .createQueryBuilder('users')
-      .select()
-      .where('users.id=:id', { id })
-      .getMany();
-
+    const users = await this.dataSource.query(
+      `SELECT * FROM "users" WHERE "id"=$1`,
+      [id],
+    );
     if (users.length === 0) {
       return null;
     }
@@ -148,12 +148,10 @@ export class UsersRepository {
     return result;
   }
   async getUserById(id: string): Promise<UsersDBType | null> {
-    const users = await this.dataSource
-      .getRepository(Users)
-      .createQueryBuilder('users')
-      .select()
-      .where('users.id=:id', { id })
-      .getMany();
+    const users = await this.dataSource.query(
+      `SELECT * FROM "users" WHERE "id"=$1`,
+      [id],
+    );
     if (users.length === 0) {
       return null;
     }
@@ -176,21 +174,26 @@ export class UsersRepository {
     return result;
   }
   async updateConfirmation(id: string) {
-    const result = await this.dataSource
-      .createQueryBuilder()
-      .update(Users)
-      .set({ isConfirmed: true })
-      .where('users.id=:id', { id })
-      .execute();
-    return result.affected === 1;
+    const users = await this.dataSource.query(
+      `SELECT * FROM "users" WHERE "id"=$1`,
+      [id],
+    );
+    if (users.length === 0) {
+      return false;
+    }
+    const result = await this.dataSource.query(
+      `UPDATE "users" SET "isConfirmed"=$1 WHERE id=$2`,
+      [true, id],
+    );
+
+    return true;
   }
   async findByConfirmationCode(code: string): Promise<UsersDBType | null> {
-    const users = await this.dataSource
-      .getRepository(Users)
-      .createQueryBuilder('users')
-      .select()
-      .where('users.confirmationCode=:code', { code })
-      .getMany();
+    const users = await this.dataSource.query(
+      `SELECT * FROm "users" WHERE "confirmationCode"=$1`,
+      [code],
+    );
+
     if (users.length === 0) {
       return null;
     }
@@ -213,12 +216,10 @@ export class UsersRepository {
     return result;
   }
   async findByEmail(email: string): Promise<UsersDBType | null> {
-    const users = await this.dataSource
-      .getRepository(Users)
-      .createQueryBuilder('users')
-      .select()
-      .where('users.email=:email', { email })
-      .getMany();
+    const users = await this.dataSource.query(
+      `SELECT * FROM users WHERE email=$1`,
+      [email],
+    );
     if (users.length === 0) {
       return null;
     }
@@ -242,46 +243,50 @@ export class UsersRepository {
   }
 
   async updateCode(id: string, code: string) {
-    const user = await this.dataSource
-      .createQueryBuilder()
-      .update(Users)
-      .set({ confirmationCode: code })
-      .where('user.id=:id', { id })
-      .execute();
-
-    return user.affected === 1;
+    const user = await this.dataSource.query(
+      `SELECT * FROM "users" WHERE "id"=$1`,
+      [id],
+    );
+    if (user.length === 0) {
+      return false;
+    }
+    await this.dataSource.query(
+      `UPDATE FROM "users" SET "confirmationCode"=$1`,
+      [code],
+    );
+    return true;
   }
   async refreshTokenSave(token: string) {
-    const result = await this.dataSource
-      .createQueryBuilder()
-      .insert()
-      .into(Token)
-      .values({ token: token })
-      .execute();
+    const result = await this.dataSource.query(
+      `INSERT INTO "token"(token) VALUES($1)`,
+      [token],
+    );
     return token;
   }
 
   async refreshTokenFind(token: string): Promise<string | null> {
-    const result = await this.dataSource
-      .getRepository(Token)
-      .createQueryBuilder('token')
-      .select()
-      .where('token.token=:token', { token })
-      .getOne();
-    if (result[0].length === 0) {
+    const result = await this.dataSource.query(
+      `SELECT * FROM "token" WHERE token=$1`,
+      [token],
+    );
+
+    if (result.length === 0) {
       return null;
     }
 
     return result.token;
   }
   async refreshTokenKill(token: string): Promise<boolean> {
-    const result = await this.dataSource
-      .createQueryBuilder()
-      .delete()
-      .from(Token)
-      .where('token.token=:token', { token })
-      .execute();
-
-    return result.affected === 1;
+    const result = await this.dataSource.query(
+      `SELECT * FROM "token" WHERE token=$1`,
+      [token],
+    );
+    if (result.length === 0) {
+      return false;
+    }
+    await this.dataSource.query(`DELETE FROM "token" WHERE "token"=$1`, [
+      token,
+    ]);
+    return true;
   }
 }

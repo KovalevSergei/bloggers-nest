@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PostsRepository } from 'src/posts/posts.repository';
+import { PostsRepository } from 'src/posts/posts.repositorySQL';
 //import { PostsService } from 'src/posts/posts.service';
 import { postsDBType, postsreturn, postsType } from 'src/posts/posts.type';
 import { BloggersRepository } from './bloggersSQL.repository';

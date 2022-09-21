@@ -25,6 +25,7 @@ import {
   USERS_COLLECTION,
 } from 'src/db';
 import { Bloggers, LikePosts, Posts } from 'src/db.sql';
+//import { Bloggers, LikePosts, Posts } from 'src/db.sql';
 import { UsersRepository as UsersRepositoryMongo } from 'src/users/users-repository';
 import { UsersRepository as UsersRepositorySQL } from 'src/users/users-repositorySQL';
 import { UsersService } from 'src/users/users-service';
