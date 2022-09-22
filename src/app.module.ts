@@ -27,7 +27,7 @@ import { UsersModule } from './users/users-module';
       port: 5432,
       username: 'postgres',
       password: '123',
-      database: 'postgres',
+      database: 'postgres2',
       entities: [
         Posts,
         Bloggers,

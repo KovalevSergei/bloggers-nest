@@ -6,17 +6,20 @@ import {
   OneToMany,
   ManyToOne,
   JoinColumn,
+  JoinTable,
 } from 'typeorm';
 import { bloggersDBType } from './bloggers/bloggers.type';
 import { likeComments } from './comments/comments.type';
 import { likePosts, postsDBType } from './posts/posts.type';
 @Entity()
 export class Bloggers {
-  @PrimaryColumn()
+  @PrimaryColumn({ name: 'id', type: 'varchar', nullable: false })
   id: string;
-  @Column()
+
+  @Column({ name: 'name', type: 'varchar', nullable: false })
   name: string;
-  @Column()
+
+  @Column({ name: 'youtubeUrl', type: 'varchar', nullable: false })
   youtubeUrl: string;
 
   @OneToMany(() => Posts, (posts) => posts.blogger)
@@ -25,98 +28,122 @@ export class Bloggers {
 
 @Entity()
 export class Posts {
-  @PrimaryColumn()
+  @PrimaryColumn({ name: 'id', type: 'varchar', nullable: false })
   id: string;
-  @Column()
+
+  @Column({ name: 'title', type: 'varchar', nullable: false })
   title: string;
-  @Column()
+
+  @Column({ name: 'shortDescription', type: 'varchar', nullable: false })
   shortDescription: string;
-  @Column()
+
+  @Column({ name: 'content', type: 'varchar', nullable: false })
   content: string;
-  /*  @ManyToOne(() => Bloggers)
-  blogger: Bloggers; */
-  @Column({ nullable: false })
+
+  @Column({ name: 'addedAt', type: 'timestamp', nullable: false })
   addedAt: Date;
+
   @ManyToOne(() => Bloggers, (blogger) => blogger.posts)
   blogger: Bloggers;
+
   @OneToMany(() => Comments, (comment) => comment.post)
   comment: Comments[];
-  @OneToMany(() => LikePosts, (likePosts) => likePosts.posts)
-  likePosts: likePosts[];
+
+  @OneToMany(() => LikePosts, (likeposts) => likeposts.posts)
+  likeposts: likePosts[]; //likeposts_posts
 }
 @Entity()
 export class Users {
-  @PrimaryColumn()
+  @PrimaryColumn({ name: 'id', type: 'varchar', nullable: false })
   id: string;
-  @Column()
+
+  @Column({ name: 'login', type: 'varchar', nullable: false })
   login: string;
-  @Column()
+
+  @Column({ name: 'email', type: 'varchar', nullable: false })
   email: string;
-  @Column()
+
+  @Column({ name: 'passwordHash', type: 'varchar', nullable: false })
   passwordHash: string;
-  @Column()
+
+  @Column({ name: 'passwordSalt', type: 'varchar', nullable: false })
   passwordSalt: string;
-  @Column()
+
+  @Column({ name: 'createdAt', type: 'timestamp', nullable: false })
   createdAt: Date;
-  @Column()
+
+  @Column({ name: 'confirmationCode', type: 'varchar', nullable: false })
   confirmationCode: string;
-  @Column()
+
+  @Column({ name: 'expirationDate', type: 'timestamp', nullable: false })
   expirationDate: Date;
-  @Column()
+
+  @Column({ name: 'isConfirmed', type: 'boolean', nullable: false })
   isConfirmed: boolean;
+
   @OneToMany(() => Comments, (comment) => comment.user)
   comment: Comments[];
+
   @OneToMany(() => LikeComments, (likeComments) => likeComments.users)
   likeComments: LikeComments[];
-  @OneToMany(() => LikePosts, (likePosts) => likePosts.users)
-  likePosts: LikePosts[];
+
+  @OneToMany(() => LikePosts, (likeposts) => likeposts.posts)
+  likeposts: LikePosts[];
 }
 @Entity()
 export class Token {
-  @PrimaryColumn()
+  @PrimaryColumn({ name: 'token', type: 'varchar', nullable: false })
   token: string;
 }
 @Entity()
 export class Comments {
-  @PrimaryColumn()
+  @PrimaryColumn({ name: 'id', type: 'varchar', nullable: false })
   id: string;
-  @Column()
+
+  @Column({ name: 'content', type: 'varchar', nullable: false })
   content: string;
-  @Column()
+
+  @Column({ name: 'addedAt', type: 'timestamp', nullable: false })
   addedAt: Date;
+
   @ManyToOne(() => Posts, (post) => post.comment)
   post: Posts;
+
   @ManyToOne(() => Users, (user) => user.comment)
   user: Users;
+
   @OneToMany(() => LikeComments, (likeComments) => likeComments.comments)
-  likeComments: likeComments[];
+  likeComments: LikeComments[];
 }
 @Entity()
 export class LikeComments {
-  @Column()
+  /*   @PrimaryGeneratedColumn('identity')
+  id: number; */
+
+  @Column({ name: 'myStatus', type: 'varchar', nullable: false })
   myStatus: string;
-  @PrimaryColumn()
+
+  @PrimaryColumn({ name: 'addedAt', type: 'timestamp', nullable: false })
   addedAt: Date;
+
   @ManyToOne(() => Comments, (comments) => comments.likeComments)
   comments: Comments;
+
   @ManyToOne(() => Users, (users) => users.likeComments)
   users: Users;
 }
 
-@Entity()
+@Entity({ name: 'likeposts' })
 export class LikePosts {
-  @PrimaryColumn()
-  postsId: string;
-  @Column()
-  userId: string;
-  @Column()
+  @Column({ name: 'myЫtatus', type: 'varchar', nullable: false })
   myStatus: string;
-  @Column()
+
+  @PrimaryColumn({ name: 'addedAt', type: 'timestamp', nullable: false })
   addedAt: Date;
-  @Column()
-  login: string;
-  @ManyToOne(() => Users, (users) => users.likePosts)
+
+  @ManyToOne(() => Users, (users) => users.likeposts)
   users: Users;
-  @ManyToOne(() => Posts, (posts) => posts.likePosts)
+
+  @ManyToOne(() => Posts, (posts) => posts.likeposts)
   posts: Posts;
 }

@@ -99,6 +99,7 @@ export class PostsController {
     for (let i = 0; i < itemsPost.length; i++) {
       const postId = itemsPost[i].id;
       const likesInformation = await this.postsService.getLike(postId, userId);
+      console.log(likesInformation, 'likesInformation');
       const newestLikes = await this.postsService.getNewestLikes(postId);
       const newestLikesMap = newestLikes.map((v) => ({
         addedAt: v.addedAt,

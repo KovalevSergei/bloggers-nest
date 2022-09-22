@@ -20,7 +20,7 @@ export class PostsRepository {
       .limit(pageSize)
       .offset((pageNumber - 1) * pageSize)
       .getMany();
-    console.log(posts);
+    console.log(posts, '13');
     const items = posts.map((v) => ({
       id: v.id,
       title: v.title,
@@ -30,6 +30,7 @@ export class PostsRepository {
       bloggerName: v.blogger.name,
       addedAt: v.addedAt,
     }));
+    console.log(items, 'items');
     const totalCount = await this.dataSource
       .getRepository(Posts)
       .createQueryBuilder('posts')
@@ -53,6 +54,7 @@ export class PostsRepository {
         addedAt: postsnew.addedAt,
       })
       .execute();
+
     return postsnew;
   }
   async getpostsId(id: string): Promise<postsType | null> {
@@ -144,7 +146,7 @@ export class PostsRepository {
     await this.dataSource
       .createQueryBuilder()
       .where('users.id=:id', { id: likePostForm.userId })
-      .where('coometns.id=:id', { id: likePostForm.postsId })
+      .where('post.id=:id', { id: likePostForm.postsId })
       .insert()
       .into(LikePosts)
       .values({
@@ -171,7 +173,7 @@ VALUES ($1,$2,$3,$4,$5,$6)`,
       .createQueryBuilder()
       .delete()
       .from(LikePosts)
-      .where('comments.id=:postId', { postId })
+      .where('posts.id=:postId', { postId })
       .where('users.id=:userId', { userId })
       .execute();
 
@@ -191,12 +193,16 @@ VALUES ($1,$2,$3,$4,$5,$6)`,
     myStatus: string;
   }> {
     const result = { likesCount: 0, dislikesCount: 0, myStatus: 'None' };
+    console.log('tut');
     const likesCount = await this.dataSource
       .getRepository(LikePosts)
       .createQueryBuilder('likePosts')
-      .where('likePosts.posts.id=:postId', { postId })
-      .where('likePosts.myStatus=:a', { a: 'Like' })
+      .leftJoinAndSelect('likePosts.posts', 'posts')
+      .where('posts.id = :postId', { postId })
+      .andWhere('likePosts.myStatus = :like', { like: 'Like' })
       .getCount();
+
+    console.log(likesCount, 'likesCount');
     /*   .query(
       `SELECT COUNT("postsId") as res2 FROM "likeposts" 
       WHERE 
@@ -208,10 +214,10 @@ VALUES ($1,$2,$3,$4,$5,$6)`,
     const disLikes = await this.dataSource
       .getRepository(LikePosts)
       .createQueryBuilder('likePosts')
-      .where('likePosts.posts.id=:postId', { postId })
+      .where('posts.id=:postId', { postId })
       .where('likePosts.myStatus=:a', { a: 'Dislike' })
       .getCount();
-
+    console.log(disLikes, 'dislikes');
     /* .query(
       `SELECT COUNT("postsId") as res3 FROM "likeposts" WHERE 
         "postsId"= $1 and
@@ -222,7 +228,7 @@ VALUES ($1,$2,$3,$4,$5,$6)`,
     const my = await this.dataSource
       .getRepository(LikePosts)
       .createQueryBuilder('likePosts')
-      .where('likePosts.posts.id=:postId', { postId })
+      .where('posts.id=:postId', { postId })
       .where('likePosts.user=:userId', { userId })
       .getMany();
 
@@ -280,10 +286,10 @@ VALUES ($1,$2,$3,$4,$5,$6)`,
     const result = await this.dataSource
       .getRepository(LikePosts)
       .createQueryBuilder('likePosts')
-      .leftJoinAndSelect('likePosts:posts', 'posts')
-      .where('likePosts.posts.id=:postId', { postId })
-      .leftJoinAndSelect('likePosts.users', 'users')
-      .where('likePosts.users.id=:userId', { userId })
+      .leftJoinAndSelect('likeposts:posts', 'posts')
+      .where('likeposts.posts.id=:postId', { postId })
+      .leftJoinAndSelect('likeposts.users', 'users')
+      .where('likeposts.users.id=:userId', { userId })
       .getMany();
     if (result.length === 0) {
       return null;
