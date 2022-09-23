@@ -76,6 +76,10 @@ export class BloggersRepository {
       .where('bloggers.id=:id', { id })
       .getOne();
     return res;
+
+    /*    return this.dataSource.getRepository(Bloggers).findOne({ where: {
+      id: id
+    }}) */
   }
   async deleteBloggersById(id: string): Promise<boolean> {
     const bloggersInstance = await this.dataSource

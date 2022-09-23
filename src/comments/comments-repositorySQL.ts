@@ -12,7 +12,7 @@ import {
 import { ObjectId } from 'mongodb';
 import { DataSource } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { Comments, LikeComments } from 'src/db.sql';
+import { Comments, LikeComments, Posts, Users } from 'src/db.sql';
 interface commentReturn {
   items: commentsDBType[];
   totalCount: number;
@@ -76,17 +76,19 @@ export class CommentsRepository {
     return commentInstance.affected === 1;
   }
   async createComment(comment: commentsDBPostIdType): Promise<commentsDBType2> {
-    await this.dataSource
-      .createQueryBuilder()
-      .where('users.id=:userId', { userId: comment.userId })
-      .where('posts.id=:postId', { postId: comment.postId })
-      .insert()
-      .into(Comments)
-      .values({
-        id: comment.id,
-        content: comment.content,
-        addedAt: comment.addedAt,
-      });
+    const commentCreate = new Comments();
+    commentCreate.id = comment.id;
+    commentCreate.content = comment.content;
+    commentCreate.addedAt = new Date();
+    const user = await this.dataSource
+      .getRepository(Users)
+      .findOne({ where: { id: comment.userId } });
+    const post = await this.dataSource
+      .getRepository(Posts)
+      .findOne({ where: { id: comment.postId } });
+    commentCreate.post = post;
+    commentCreate.user = user;
+    await this.dataSource.getRepository(Comments).save(commentCreate);
     return {
       id: comment.id,
       content: comment.content,
@@ -136,18 +138,18 @@ export class CommentsRepository {
     return { items: a, totalCount: totalCount };
   }
   async createLikeStatus(likeCommentForm: likeComments): Promise<boolean> {
-    await this.dataSource
-      .createQueryBuilder()
-      .where('users.id=:id', { id: likeCommentForm.userId })
-      .where('coometns.id=:id', { id: likeCommentForm.commentsId })
-      .insert()
-      .into(LikeComments)
-      .values({
-        addedAt: likeCommentForm.addedAt,
-        myStatus: likeCommentForm.myStatus,
-      })
-      .execute();
-
+    const likeStatus = new LikeComments();
+    likeStatus.addedAt = likeCommentForm.addedAt;
+    likeStatus.myStatus = likeCommentForm.myStatus;
+    const comments = await this.dataSource
+      .getRepository(Comments)
+      .findOne({ where: { id: likeCommentForm.commentsId } });
+    const user = await this.dataSource
+      .getRepository(Users)
+      .findOne({ where: { id: likeCommentForm.userId } });
+    likeStatus.users = user;
+    likeStatus.comments = comments;
+    await this.dataSource.getRepository(LikeComments).save(likeStatus);
     /*     query(
       `INSERT INTO
 "likecomments"("commentsId","userId","myStatus","addedAt","login") 
@@ -169,10 +171,10 @@ VALUES ($1,$2,$3,$4,$5,$6)`,
     const result = await this.dataSource
       .getRepository(LikeComments)
       .createQueryBuilder('likeComments')
-      .leftJoinAndSelect('likeComments:comments', 'commetns')
-      .where('likeComments.comments.id=:commentsId', { commentsId })
+      .leftJoinAndSelect('likeComments.comments', 'commetns')
+      .where('comments.id=.commentsId', { commentsId })
       .leftJoinAndSelect('likeComments.users', 'users')
-      .where('likeComments.users.id=:userId', { userId })
+      .where('users.id=:userId', { userId })
       .getMany();
     if (result.length === 0) {
       return null;
@@ -234,8 +236,9 @@ VALUES ($1,$2,$3,$4,$5,$6)`,
     const likesCount = await this.dataSource
       .getRepository(LikeComments)
       .createQueryBuilder('likeComments')
+      .leftJoinAndSelect('likeComments.comments', 'comments')
       .where('likeComments.comments.id=:commentsId', { commentsId })
-      .where('likeComments.myStatus=:a', { a: 'Like' })
+      .where('myStatus=:a', { a: 'Like' })
       .getCount();
 
     /* query(
@@ -249,6 +252,7 @@ VALUES ($1,$2,$3,$4,$5,$6)`,
     const disLikes = await this.dataSource
       .getRepository(LikeComments)
       .createQueryBuilder('likeComments')
+      .leftJoinAndSelect('likeComments.comments', 'comments')
       .where('likeComments.comments.id=:commentsId', { commentsId })
       .where('likeComments.myStatus=:a', { a: 'Dislike' })
       .getCount();
@@ -264,9 +268,10 @@ VALUES ($1,$2,$3,$4,$5,$6)`,
     const my = await this.dataSource
       .getRepository(LikeComments)
       .createQueryBuilder('likeComments')
+      .leftJoinAndSelect('likeComments.comments', 'comments')
       .where('likeComments.comments.id=:commentsId', { commentsId })
+      .leftJoinAndSelect('likeComments.users', 'users')
       .where('likeComments.user.id=:userId', { userId })
-
       .getMany();
 
     /* 

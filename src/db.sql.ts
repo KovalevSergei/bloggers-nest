@@ -7,11 +7,12 @@ import {
   ManyToOne,
   JoinColumn,
   JoinTable,
+  AfterInsert,
 } from 'typeorm';
 import { bloggersDBType } from './bloggers/bloggers.type';
 import { likeComments } from './comments/comments.type';
 import { likePosts, postsDBType } from './posts/posts.type';
-@Entity()
+@Entity('bloggers')
 export class Bloggers {
   @PrimaryColumn({ name: 'id', type: 'varchar', nullable: false })
   id: string;
@@ -51,9 +52,17 @@ export class Posts {
 
   @OneToMany(() => LikePosts, (likeposts) => likeposts.posts)
   likeposts: likePosts[]; //likeposts_posts
+
+  @AfterInsert()
+  resetCounters() {
+    console.log('post create');
+  }
 }
 @Entity()
 export class Users {
+  static findOne(arg0: { where: { id: string } }) {
+    throw new Error('Method not implemented.');
+  }
   @PrimaryColumn({ name: 'id', type: 'varchar', nullable: false })
   id: string;
 
@@ -87,7 +96,7 @@ export class Users {
   @OneToMany(() => LikeComments, (likeComments) => likeComments.users)
   likeComments: LikeComments[];
 
-  @OneToMany(() => LikePosts, (likeposts) => likeposts.posts)
+  @OneToMany(() => LikePosts, (likeposts) => likeposts.users)
   likeposts: LikePosts[];
 }
 @Entity()
@@ -135,7 +144,7 @@ export class LikeComments {
 
 @Entity({ name: 'likeposts' })
 export class LikePosts {
-  @Column({ name: 'myЫtatus', type: 'varchar', nullable: false })
+  @Column({ name: 'myStatus', type: 'varchar', nullable: false })
   myStatus: string;
 
   @PrimaryColumn({ name: 'addedAt', type: 'timestamp', nullable: false })

@@ -6,6 +6,7 @@ import {
   commentsDBPostIdType,
   commentsDBType2,
 } from 'src/comments/comments.type';
+import { Posts } from 'src/db.sql';
 import { UsersRepository } from 'src/users/users-repository';
 import { UsersDBType } from 'src/users/users.type';
 import { PostsRepository } from './posts.repositorySQL';

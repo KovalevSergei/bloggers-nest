@@ -59,7 +59,7 @@ export class PostsRepository {
     await postsInstance.save(); */
 
     await this.dataSource.query(
-      `INSERT INTO "posts"
+      `INSERT INTO "posts" 
       (id,title,"shortDescription",content,"bloggerId","addedAt")
        VALUES($1,$2,$3,$4,$5,$6)`,
       [
