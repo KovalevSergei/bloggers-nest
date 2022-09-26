@@ -12,10 +12,10 @@ import {
 } from '@nestjs/common';
 import { IsArray, IsIn } from 'class-validator';
 import { NotFoundError } from 'rxjs';
-import { Auth } from 'src/guards/Auth';
-import { UserFind } from 'src/guards/userFind';
-import { UserId } from 'src/guards/userId';
-import { UsersDBTypeWithId } from 'src/users/users.type';
+import { Auth } from '../guards/Auth';
+import { UserFind } from '../guards/userFind';
+import { UserId } from '../guards/userId';
+import { UsersDBTypeWithId } from '../users/users.type';
 import { CommentsService } from './comments-service';
 type RequestWithUser = Request & { user: UsersDBTypeWithId };
 let status2 = ['None', 'Like', 'Dislike'];

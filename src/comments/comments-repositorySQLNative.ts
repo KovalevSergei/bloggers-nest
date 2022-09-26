@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { COMMENTS_COLLECTION, LIKE_COMMENTS_COLLECTION } from 'src/db';
+import { COMMENTS_COLLECTION, LIKE_COMMENTS_COLLECTION } from '../db';
 import {
   commentsDBPostIdType,
   commentsDBType,

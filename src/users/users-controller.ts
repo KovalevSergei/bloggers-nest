@@ -14,9 +14,9 @@ import {
 import { Transform, TransformFnParams } from 'class-transformer';
 import { IsEmail, isEmail, IsNotEmpty, Length } from 'class-validator';
 
-import { AuthBasic } from 'src/guards/authBasic.guards';
-import { LoginFindDoublicate } from 'src/guards/loginFindDoublicate';
-import { MailFindDoublicate } from 'src/guards/mailFindDoublicate';
+import { AuthBasic } from '../guards/authBasic.guards';
+import { LoginFindDoublicate } from '../guards/loginFindDoublicate';
+import { MailFindDoublicate } from '../guards/mailFindDoublicate';
 import { UsersService } from './users-service';
 class CreateUser {
   @IsNotEmpty()

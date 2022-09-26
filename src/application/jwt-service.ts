@@ -1,7 +1,7 @@
-import { UsersDBType } from 'src/users/users.type';
+import { UsersDBType } from '../users/users.type';
 import * as jwt from 'jsonwebtoken';
-import { settings } from 'src/setting';
-import { UsersRepository } from 'src/users/users-repositorySQL';
+import { settings } from '../setting';
+import { UsersRepository } from '../users/users-repositorySQL';
 import { Injectable } from '@nestjs/common';
 @Injectable()
 export class JwtService {

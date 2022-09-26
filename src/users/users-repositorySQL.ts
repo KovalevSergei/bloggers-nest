@@ -1,88 +1,45 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { TOKEN_COLLECTION, USERS_COLLECTION } from '../db';
 import { UsersDBType, UsersDBTypeWithId } from './users.type';
 import { ObjectId } from 'mongodb';
-import { DataSource } from 'typeorm';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { Token, Users } from 'src/db.sql';
+import { RefreshToken, refreshToken } from '../authorization/auth-type';
 interface usersReturn {
   items: UsersDBType[];
   totalCount: number;
 }
 @Injectable()
 export class UsersRepository {
-  constructor(@InjectDataSource() public dataSource: DataSource) {}
-
+  constructor(
+    @InjectModel(USERS_COLLECTION)
+    private usersModel: Model<UsersDBType>,
+    @InjectModel(TOKEN_COLLECTION)
+    private tokenModel: Model<RefreshToken>,
+  ) {}
   async createUser(newUser: UsersDBType): Promise<UsersDBType> {
-    const createUser = await this.dataSource
-      .createQueryBuilder()
-      .insert()
-      .into(Users)
-      .values({
-        id: newUser.id,
-        login: newUser.accountData.login,
-        email: newUser.accountData.email,
-        passwordHash: newUser.accountData.passwordHash,
-        passwordSalt: newUser.accountData.passwordSalt,
-        createdAt: newUser.accountData.createdAt,
-        confirmationCode: newUser.emailConfirmation.confirmationCode,
-        expirationDate: newUser.emailConfirmation.expirationDate,
-        isConfirmed: newUser.emailConfirmation.isConfirmed,
-      })
-      .execute();
-
+    const createUser = await this.usersModel.insertMany({
+      ...newUser,
+      _id: new ObjectId(),
+    });
     return newUser;
   }
   async getUsers(PageSize: number, PageNumber: number): Promise<usersReturn> {
-    const totalCount = await this.dataSource
-      .getRepository(Users)
-      .createQueryBuilder('users')
-      .getCount();
-    const users = await this.dataSource
-      .getRepository(Users)
-      .createQueryBuilder('users')
+    const totalCount = await this.usersModel.countDocuments();
+    const items = await this.usersModel
+      .find({}, { projection: { _id: 0, emailConfirmation: 0 } })
+      .skip((PageNumber - 1) * PageSize)
       .limit(PageSize)
-      .offset((PageNumber - 1) * PageSize)
-      .getMany();
-    const items = [];
-
-    for (let i = 0; i < users.length; i++) {
-      const a = {
-        id: users[i].id,
-        accountData: {
-          login: users[i].login,
-          email: users[i].email,
-          passwordHash: users[i].passwordHash,
-          passwordSalt: users[i].passwordSalt,
-          createdAt: users[i].createdAt,
-        },
-        emailConfirmation: {
-          confirmationCode: users[i].confirmationCode,
-          expirationDate: users[i].expirationDate,
-          isConfirmed: users[i].isConfirmed,
-        },
-      };
-      items.push(a);
-    }
+      .lean();
     return { totalCount: totalCount, items: items };
   }
   async deleteUsersId(id: string): Promise<boolean> {
-    const user = await this.dataSource
-      .createQueryBuilder()
-      .delete()
-      .from(Users)
-      .where('users.id=:id', { id })
-      .execute();
-
-    return user.raw === 1;
+    const result = await this.usersModel.deleteOne({ id: id });
+    return result.deletedCount === 1;
   }
   async userGetLogin(login: string): Promise<boolean> {
-    const usersFind = await this.dataSource
-      .getRepository(Users)
-      .createQueryBuilder('users')
-      .select()
-      .where('users.login=:login', { login })
-      .getMany();
-
+    const usersFind = await this.usersModel.find({ login: login }).lean();
+    console.log(usersFind);
     if (usersFind.length > 0) {
       return true;
     } else {
@@ -90,198 +47,68 @@ export class UsersRepository {
     }
   }
   async FindUserLogin(login: string): Promise<UsersDBTypeWithId | null> {
-    const users = await this.dataSource
-      .getRepository(Users)
-      .createQueryBuilder('users')
-      .select()
-      .where('users.login=:login', { login })
-      .getMany();
-    if (users.length === 0) {
-      return null;
-    }
-    const result = {
-      _id: new ObjectId(),
-      id: users[0].id,
-      accountData: {
-        login: users[0].login,
-        email: users[0].email,
-        passwordHash: users[0].passwordHash,
-        passwordSalt: users[0].passwordSalt,
-        createdAt: users[0].createdAt,
-      },
-      emailConfirmation: {
-        confirmationCode: users[0].confirmationCode,
-        expirationDate: users[0].expirationDate,
-        isConfirmed: users[0].isConfirmed,
-      },
-    };
-    return result;
+    const usersFind = await this.usersModel.findOne({
+      'accountData.login': login,
+    });
+    return usersFind;
   }
   async findUserById(id: string): Promise<UsersDBTypeWithId | null> {
-    const users = await this.dataSource
-      .getRepository(Users)
-      .createQueryBuilder('users')
-      .select()
-      .where('users.id=:id', { id })
-      .getMany();
-
-    if (users.length === 0) {
-      return null;
-    }
-    const result: UsersDBTypeWithId = {
-      _id: new ObjectId(),
-      id: users[0].id,
-      accountData: {
-        login: users[0].login,
-        email: users[0].email,
-        passwordHash: users[0].passwordHash,
-        passwordSalt: users[0].passwordSalt,
-        createdAt: users[0].createdAt,
-      },
-      emailConfirmation: {
-        confirmationCode: users[0].confirmationCode,
-        expirationDate: users[0].expirationDate,
-        isConfirmed: users[0].isConfirmed,
-      },
-    };
-
-    return result;
+    const usersFind = await this.usersModel.findOne({ id: id });
+    return usersFind;
   }
   async getUserById(id: string): Promise<UsersDBType | null> {
-    const users = await this.dataSource
-      .getRepository(Users)
-      .createQueryBuilder('users')
-      .select()
-      .where('users.id=:id', { id })
-      .getMany();
-    if (users.length === 0) {
-      return null;
-    }
-    const result: UsersDBType = {
-      id: users[0].id,
-      accountData: {
-        login: users[0].login,
-        email: users[0].email,
-        passwordHash: users[0].passwordHash,
-        passwordSalt: users[0].passwordSalt,
-        createdAt: users[0].createdAt,
-      },
-      emailConfirmation: {
-        confirmationCode: users[0].confirmationCode,
-        expirationDate: users[0].expirationDate,
-        isConfirmed: users[0].isConfirmed,
-      },
-    };
-
+    const result = await this.usersModel.findOne(
+      { id: id },
+      { projection: { _id: 0 } },
+    );
     return result;
   }
   async updateConfirmation(id: string) {
-    const result = await this.dataSource
-      .createQueryBuilder()
-      .update(Users)
-      .set({ isConfirmed: true })
-      .where('users.id=:id', { id })
-      .execute();
-    return result.affected === 1;
+    const result = await this.usersModel.updateOne(
+      { id },
+      { $set: { 'emailConfirmation.isConfirmed': true } },
+    );
+    return result.modifiedCount === 1;
   }
-  async findByConfirmationCode(code: string): Promise<UsersDBType | null> {
-    const users = await this.dataSource
-      .getRepository(Users)
-      .createQueryBuilder('users')
-      .select()
-      .where('users.confirmationCode=:code', { code })
-      .getMany();
-    if (users.length === 0) {
-      return null;
-    }
-    const result: UsersDBType = {
-      id: users[0].id,
-      accountData: {
-        login: users[0].login,
-        email: users[0].email,
-        passwordHash: users[0].passwordHash,
-        passwordSalt: users[0].passwordSalt,
-        createdAt: users[0].createdAt,
-      },
-      emailConfirmation: {
-        confirmationCode: users[0].confirmationCode,
-        expirationDate: users[0].expirationDate,
-        isConfirmed: users[0].isConfirmed,
-      },
-    };
-
-    return result;
-  }
-  async findByEmail(email: string): Promise<UsersDBType | null> {
-    const users = await this.dataSource
-      .getRepository(Users)
-      .createQueryBuilder('users')
-      .select()
-      .where('users.email=:email', { email })
-      .getMany();
-    if (users.length === 0) {
-      return null;
-    }
-    const result: UsersDBType = {
-      id: users[0].id,
-      accountData: {
-        login: users[0].login,
-        email: users[0].email,
-        passwordHash: users[0].passwordHash,
-        passwordSalt: users[0].passwordSalt,
-        createdAt: users[0].createdAt,
-      },
-      emailConfirmation: {
-        confirmationCode: users[0].confirmationCode,
-        expirationDate: users[0].expirationDate,
-        isConfirmed: users[0].isConfirmed,
-      },
-    };
-
-    return result;
+  async findByConfirmationCode(code: string) {
+    const user = await this.usersModel.findOne({
+      'emailConfirmation.confirmationCode': code,
+    });
+    return user;
   }
 
+  async findByEmail(email: string) {
+    const user = await this.usersModel.findOne({
+      'accountData.email': email,
+    });
+    return user;
+  }
   async updateCode(id: string, code: string) {
-    const user = await this.dataSource
-      .createQueryBuilder()
-      .update(Users)
-      .set({ confirmationCode: code })
-      .where('user.id=:id', { id })
-      .execute();
-
-    return user.affected === 1;
+    const result = await this.usersModel.updateOne(
+      { id },
+      { $set: { 'emailConfirmation.confirmationCode': code } },
+    );
+    return result.modifiedCount === 1;
   }
   async refreshTokenSave(token: string) {
-    const result = await this.dataSource
-      .createQueryBuilder()
-      .insert()
-      .into(Token)
-      .values({ token: token })
-      .execute();
-    return token;
+    const result = await new this.tokenModel({
+      token: token,
+      _id: new ObjectId(),
+    }).save();
+    return true;
   }
 
   async refreshTokenFind(token: string): Promise<string | null> {
-    const result = await this.dataSource
-      .getRepository(Token)
-      .createQueryBuilder('token')
-      .select()
-      .where('token.token=:token', { token })
-      .getOne();
-    if (result[0].length === 0) {
+    const result = await this.tokenModel.findOne({ token: token });
+
+    if (!result || !result.token) {
       return null;
     }
 
     return result.token;
   }
   async refreshTokenKill(token: string): Promise<boolean> {
-    const result = await this.dataSource
-      .createQueryBuilder()
-      .delete()
-      .from(Token)
-      .where('token.token=:token', { token })
-      .execute();
-
-    return result.affected === 1;
+    const result = await this.tokenModel.deleteOne({ token: token });
+    return result.deletedCount === 1;
   }
 }

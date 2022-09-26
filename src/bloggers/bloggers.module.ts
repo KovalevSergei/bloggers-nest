@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { JwtService } from 'src/application/jwt-service';
+import { JwtService } from '../application/jwt-service';
 import {
   bloggersSchema,
   BLOGGERS_COLLECTION,
@@ -13,25 +13,25 @@ import {
   TOKEN_COLLECTION,
   usersSchema,
   USERS_COLLECTION,
-} from 'src/db';
+} from '../db';
 
-import { PostsRepository } from 'src/posts/posts.repositorySQL';
-import { UsersModule } from 'src/users/users-module';
-import { UsersRepository } from 'src/users/users-repositorySQL';
-import { UsersService } from 'src/users/users-service';
+import { PostsRepository } from '../posts/posts.repositorySQL';
+import { UsersModule } from '../users/users-module';
+import { UsersRepository } from '../users/users-repositorySQL';
+import { UsersService } from '../users/users-service';
 
 import { BloggersController } from './bloggers.controller';
-import { BloggersRepository as BloggersMongooseRepository } from './bloggers.repository';
-import { BloggersRepository as BloggersSQLRepository } from './bloggersSQL.repository';
+import { BloggersRepository as BloggersMongooseRepository } from './bloggersSQL.repository';
+//import { BloggersRepository as BloggersSQLRepository } from './bloggersSQL.repository';
 import { BloggersService } from './bloggers.service';
-import { Bloggers } from 'src/db.sql';
+import { Bloggers } from '../db.sql';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: BLOGGERS_COLLECTION, schema: bloggersSchema },
     ]),
-    TypeOrmModule.forFeature([Bloggers]),
+    //TypeOrmModule.forFeature([Bloggers]),
     MongooseModule.forFeature([
       { name: POSTS_COLLECTION, schema: postsSchema },
     ]),
@@ -45,7 +45,7 @@ import { Bloggers } from 'src/db.sql';
   controllers: [BloggersController],
   providers: [
     BloggersService,
-    BloggersSQLRepository,
+    //BloggersSQLRepository,
     BloggersMongooseRepository,
     PostsRepository,
     JwtService,

@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { bloggersReturn, bloggersType } from './bloggers.type';
-import { postsType } from 'src/posts/posts.type';
+import { postsType } from '../posts/posts.type';
 import { DataSource } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
 interface postsReturn {

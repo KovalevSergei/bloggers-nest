@@ -15,10 +15,10 @@ import {
 } from '@nestjs/common';
 import { Transform, TransformFnParams } from 'class-transformer';
 import { IsNotEmpty, IsString, IsUrl, Length } from 'class-validator';
-import { AuthBasic } from 'src/guards/authBasic.guards';
-import { UserId } from 'src/guards/userId';
-import { postsType } from 'src/posts/posts.type';
-import { UsersDBTypeWithId } from 'src/users/users.type';
+import { AuthBasic } from '../guards/authBasic.guards';
+import { UserId } from '../guards/userId';
+import { postsType } from '../posts/posts.type';
+import { UsersDBTypeWithId } from '../users/users.type';
 import { BloggersService } from './bloggers.service';
 type RequestWithUser = Request & { user: UsersDBTypeWithId };
 class UpdateBloggers {

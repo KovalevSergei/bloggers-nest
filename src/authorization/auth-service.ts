@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { JwtService } from 'src/application/jwt-service';
-import { EmailAdapter } from 'src/email/email-service';
-import { UsersRepository } from 'src/users/users-repositorySQL';
-import { UsersService } from 'src/users/users-service';
-import { UsersDBType } from 'src/users/users.type';
+import { JwtService } from '../application/jwt-service';
+import { EmailAdapter } from '../email/email-service';
+import { UsersRepository } from '../users/users-repositorySQL';
+import { UsersService } from '../users/users-service';
+import { UsersDBType } from '../users/users.type';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()

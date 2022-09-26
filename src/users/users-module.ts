@@ -6,18 +6,18 @@ import {
   TOKEN_COLLECTION,
   usersSchema,
   USERS_COLLECTION,
-} from 'src/db';
-import { Token, Users } from 'src/db.sql';
-//import { Token, Users } from 'src/db.sql';
+} from '../db';
+import { Token, Users } from '../db.sql';
+//import { Token, Users } from '../db.sql';
 import { UsersController } from './users-controller';
-import { UsersRepository as UsersRepositoryMongo } from './users-repository';
-import { UsersRepository as UsersRepositorySQL } from './users-repositorySQL';
+import { UsersRepository as UsersRepositoryMongo } from './users-repositorySQL';
+//import { UsersRepository as UsersRepositorySQL } from './users-repositorySQL';
 import { UsersService } from './users-service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Users]),
-    TypeOrmModule.forFeature([Token]),
+    //TypeOrmModule.forFeature([Users]),
+    // TypeOrmModule.forFeature([Token]),
     MongooseModule.forFeature([
       { name: USERS_COLLECTION, schema: usersSchema },
     ]),
@@ -26,7 +26,7 @@ import { UsersService } from './users-service';
     ]),
   ],
   controllers: [UsersController],
-  providers: [UsersService, UsersRepositoryMongo, UsersRepositorySQL],
+  providers: [UsersService, UsersRepositoryMongo],
   exports: [],
 })
 export class UsersModule {}

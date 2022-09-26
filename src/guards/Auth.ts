@@ -7,9 +7,9 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { Request } from 'express';
-import { JwtService } from 'src/application/jwt-service';
-import { UsersService } from 'src/users/users-service';
-import { UsersDBTypeWithId } from 'src/users/users.type';
+import { JwtService } from '../application/jwt-service';
+import { UsersService } from '../users/users-service';
+import { UsersDBTypeWithId } from '../users/users.type';
 type RequestWithUser = Request & { user: UsersDBTypeWithId };
 
 @Injectable()

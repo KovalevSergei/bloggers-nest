@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -7,6 +8,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './authorization/auth-module';
 import { BloggersModule } from './bloggers/bloggers.module';
 import { CommentsModule } from './comments/commetns-module';
+import { DatabaseModule } from './database.module';
 import {
   Bloggers,
   Comments,
@@ -21,7 +23,7 @@ import { UsersModule } from './users/users-module';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
+    /*  TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
       port: 5432,
@@ -39,6 +41,9 @@ import { UsersModule } from './users/users-module';
       ],
       synchronize: false,
       //  logging: ['query'],
+    }), */
+    ConfigModule.forRoot({
+      isGlobal: true,
     }),
     MongooseModule.forRoot('mongodb://localhost/nest'),
     BloggersModule,
@@ -47,6 +52,7 @@ import { UsersModule } from './users/users-module';
     CommentsModule,
     TestingModule,
     AuthModule,
+    DatabaseModule,
   ],
   controllers: [AppController],
   providers: [AppService],

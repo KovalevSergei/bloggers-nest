@@ -5,9 +5,9 @@ import {
   HttpException,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { UsersDBTypeWithId } from 'src/users/users.type';
+import { UsersDBTypeWithId } from '../users/users.type';
 
-import { UsersRepository } from 'src/users/users-repositorySQL';
+import { UsersRepository } from '../users/users-repositorySQL';
 type RequestWithUser = Request & { user: UsersDBTypeWithId };
 @Injectable()
 export class MailFindDoublicate implements CanActivate {

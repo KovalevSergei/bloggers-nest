@@ -10,7 +10,7 @@ import { ObjectId } from 'mongodb';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { InjectModel } from '@nestjs/mongoose';
-import { POSTS_COLLECTION } from 'src/db';
+import { POSTS_COLLECTION } from '../db';
 import { Model } from 'mongoose';
 interface postsReturn {
   items: postsType[];

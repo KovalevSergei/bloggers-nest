@@ -25,14 +25,14 @@ import {
   Length,
 } from 'class-validator';
 import { NOTFOUND } from 'dns';
-import { CommentsService } from 'src/comments/comments-service';
-import { commentDBTypePagination } from 'src/comments/comments.type';
-import { Auth } from 'src/guards/Auth';
-import { AuthBasic } from 'src/guards/authBasic.guards';
+import { CommentsService } from '../comments/comments-service';
+import { commentDBTypePagination } from '../comments/comments.type';
+import { Auth } from '../guards/Auth';
+import { AuthBasic } from '../guards/authBasic.guards';
 import { PostsService } from './posts.service';
 import { Request } from 'express';
-import { UsersDBTypeWithId } from 'src/users/users.type';
-import { UserId } from 'src/guards/userId';
+import { UsersDBTypeWithId } from '../users/users.type';
+import { UserId } from '../guards/userId';
 let status = ['None', 'Like', 'Dislike'];
 type RequestWithUser = Request & { user: UsersDBTypeWithId };
 class likeStatus {

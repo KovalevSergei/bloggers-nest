@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { UsersRepository } from 'src/users/users-repositorySQL';
-import { UsersDBType } from 'src/users/users.type';
+import { UsersRepository } from '../users/users-repositorySQL';
+import { UsersDBType } from '../users/users.type';
 import { CommentsRepository } from './comments-repositorySQL';
 import {
   commentDBTypePagination,

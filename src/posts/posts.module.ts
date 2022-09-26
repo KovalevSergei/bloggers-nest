@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { JwtService } from 'src/application/jwt-service';
-import { BloggersModule } from 'src/bloggers/bloggers.module';
-import { BloggersRepository as BloggersMongooseRepository } from 'src/bloggers/bloggers.repository';
-import { BloggersRepository as BloggersSQLRepository } from 'src/bloggers/bloggersSQL.repository';
+import { JwtService } from '../application/jwt-service';
+import { BloggersModule } from '../bloggers/bloggers.module';
+import { BloggersRepository as BloggersMongooseRepository } from '../bloggers/bloggersSQL.repository';
+//import { BloggersRepository as BloggersSQLRepository } from '../bloggers/bloggersSQL.repository';
 
-import { CommentsRepository } from 'src/comments/comments-repository';
+import { CommentsRepository } from '../comments/comments-repositorySQL';
 
 import {
   bloggersSchema,
@@ -23,14 +23,14 @@ import {
   TOKEN_COLLECTION,
   usersSchema,
   USERS_COLLECTION,
-} from 'src/db';
+} from '../db';
 import { Bloggers, LikePosts, Posts } from 'src/db.sql';
 //import { Bloggers, LikePosts, Posts } from 'src/db.sql';
-import { UsersRepository as UsersRepositoryMongo } from 'src/users/users-repository';
-import { UsersRepository as UsersRepositorySQL } from 'src/users/users-repositorySQL';
-import { UsersService } from 'src/users/users-service';
+import { UsersRepository as UsersRepositoryMongo } from '../users/users-repositorySQL';
+//import { UsersRepository as UsersRepositorySQL } from 'src/users/users-repositorySQL';
+import { UsersService } from '../users/users-service';
 import { PostsController } from './posts.controller';
-import { PostsRepository as PostsRepositoryMongo } from './posts.repository';
+import { PostsRepository as PostsRepositoryMongo } from './posts.repositorySQL';
 import { PostsRepository as PostsRepositorySQL } from './posts.repositorySQL';
 import { PostsService } from './posts.service';
 
@@ -39,9 +39,9 @@ import { PostsService } from './posts.service';
     MongooseModule.forFeature([
       { name: POSTS_COLLECTION, schema: postsSchema },
     ]),
-    TypeOrmModule.forFeature([Posts]),
-    TypeOrmModule.forFeature([Bloggers]),
-    TypeOrmModule.forFeature([LikePosts]),
+    //TypeOrmModule.forFeature([Posts]),
+    // TypeOrmModule.forFeature([Bloggers]),
+    //TypeOrmModule.forFeature([LikePosts]),
     MongooseModule.forFeature([
       { name: LIKE_POSTS_COLLECTION, schema: likePostsShema },
     ]),
@@ -66,11 +66,11 @@ import { PostsService } from './posts.service';
     PostsService,
     PostsRepositoryMongo,
     BloggersMongooseRepository,
-    BloggersSQLRepository,
+    //BloggersSQLRepository,
     CommentsRepository,
     PostsRepositorySQL,
     UsersRepositoryMongo,
-    UsersRepositorySQL,
+    // UsersRepositorySQL,
     JwtService,
     UsersService,
   ],

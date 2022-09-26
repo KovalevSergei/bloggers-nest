@@ -1,107 +1,71 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { bloggersReturn, bloggersType } from './bloggers.type';
-import { postsType } from 'src/posts/posts.type';
-import { DataSource, Like } from 'typeorm';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { Bloggers } from 'src/db.sql';
-import { intlFormat } from 'date-fns';
-import { validateSync } from 'class-validator';
+import { BloggersModel, BLOGGERS_COLLECTION, POSTS_COLLECTION } from '../db';
+import { FilterQuery, Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { postsType } from '../posts/posts.type';
+import { ObjectId } from 'mongodb';
+import { PostsService } from '../posts/posts.service';
 interface postsReturn {
   items: postsType[];
   totalCount: number;
 }
 @Injectable()
 export class BloggersRepository {
-  constructor(@InjectDataSource() public dataSource: DataSource) {}
+  constructor(
+    @InjectModel(BLOGGERS_COLLECTION)
+    private bloggersModel: Model<bloggersType>,
+  ) {}
 
   async getBloggers(
     pageSize: number,
     pageNumber: number,
     SearhName: string,
   ): Promise<bloggersReturn> {
-    const totalCount = await this.dataSource
-      .getRepository(Bloggers)
-      .createQueryBuilder('bloggers')
-      .where({ name: Like('%' || SearhName || '%') })
-      .getCount();
+    const filterQuery: FilterQuery<bloggersType> = {};
 
-    const pagination = (pageNumber - 1) * pageSize;
-    const items = await this.dataSource
-      .getRepository(Bloggers)
-      .createQueryBuilder('bloggers')
-      .where({ name: Like('%' || SearhName || '%') })
+    if (SearhName) {
+      filterQuery.name = { $regex: SearhName };
+    }
+
+    const totalCount = await this.bloggersModel.count(filterQuery);
+
+    const items = await this.bloggersModel
+      .find(filterQuery, { projection: { _id: 0 } })
       .limit(pageSize)
-      .offset(pagination)
-      .getMany();
-
-    /* query(
-      `SELECT * FROM "bloggers"
-        WHERE name LIKE ('%'||$1||'%')
-        ORDER BY name DESC 
-        LIMIT $2 OFFSET (($3 - 1) * $2)`,
-      [SearhName || '', pageSize, pageNumber],
-    ); */
+      .skip((pageNumber - 1) * pageSize)
+      .lean();
 
     return {
       totalCount: totalCount,
       items: items,
     };
   }
-
   async createBloggers(bloggersnew: bloggersType): Promise<bloggersType> {
-    await this.dataSource
-      .createQueryBuilder()
-      .insert()
-      .into(Bloggers)
-      .values({
-        id: bloggersnew.id,
-        name: bloggersnew.name,
-        youtubeUrl: bloggersnew.youtubeUrl,
-      })
-      .execute();
+    const bloggersInstance = new this.bloggersModel();
+    bloggersInstance.id = bloggersnew.id;
+    bloggersInstance.name = bloggersnew.name;
+    bloggersInstance.youtubeUrl = bloggersnew.youtubeUrl;
 
-    /*   query(
-      `INSERT INTO bloggers 
-      ("id" ,"name","youtubeUrl") 
-      VALUES ($1,$2,$3)`,
-      [bloggersnew.id, bloggersnew.name, bloggersnew.youtubeUrl],
-    ); */
+    await bloggersInstance.save();
+
+    /*    const bloggersNew = await bloggersModel.insertMany({
+      ...bloggersnew,
+      _id: new ObjectId(),
+    }); */
+
     return bloggersnew;
   }
   async getBloggersById(id: string): Promise<bloggersType | null> {
-    const res = await this.dataSource
-      .getRepository(Bloggers)
-      .createQueryBuilder('bloggers')
-      .select()
-      .where('bloggers.id=:id', { id })
-      .getOne();
-    return res;
-
-    /*    return this.dataSource.getRepository(Bloggers).findOne({ where: {
-      id: id
-    }}) */
+    return this.bloggersModel.findOne({ id: id }, { projection: { _id: 0 } });
   }
   async deleteBloggersById(id: string): Promise<boolean> {
-    const bloggersInstance = await this.dataSource
-      .getRepository(Bloggers)
-      .createQueryBuilder('bloggers')
-      .where('bloggers.id=:id', { id })
-      .getOne();
-
-    /*     query(
-      `SELECT * FROM "bloggers"    
-    WHERE id=$1`,
-      [id],
-    ); */
-    if (bloggersInstance === null) {
+    //const result = await bloggersModel.deleteOne({ id: id });
+    const bloggersInstance = await this.bloggersModel.findOne({ id: id });
+    if (!bloggersInstance) {
       return false;
     }
-    await this.dataSource
-      .createQueryBuilder()
-      .delete()
-      .from(Bloggers)
-      .where('bloggers.id=:id', { id })
-      .execute();
+    await bloggersInstance.deleteOne();
 
     return true;
   }
@@ -110,28 +74,18 @@ export class BloggersRepository {
     name: string,
     youtubeUrl: string,
   ): Promise<boolean> {
-    const bloggersInstance = await this.dataSource
-      .getRepository(Bloggers)
-      .createQueryBuilder('bloggers')
-      .where('bloggers.id=:id', { id })
-      .getOne();
-
-    if (bloggersInstance === null) {
+    const bloggersInstance = await this.bloggersModel.findOne({ id: id });
+    console.log(id, bloggersInstance);
+    /*  const result = await bloggersModel.updateOne(
+      { id: id },
+      { $set: { name: name, youtubeUrl: youtubeUrl } }
+    ); */
+    if (!bloggersInstance) {
       return false;
     }
-    await this.dataSource
-      .createQueryBuilder()
-      .update(Bloggers)
-      .set({ name: name, youtubeUrl: youtubeUrl })
-      .where('bloggers.id=:id', { id })
-      .execute();
-    /*     
-    query(
-      `UPDATE "bloggers" SET name=$2, "youtubeUrl"=$3
-       WHERE id=$1`,
-      [id, name, youtubeUrl],
-    ); */
-
+    bloggersInstance.name = name;
+    bloggersInstance.youtubeUrl = youtubeUrl;
+    await bloggersInstance.save();
     return true;
   }
 }

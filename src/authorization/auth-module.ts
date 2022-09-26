@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { JwtService } from 'src/application/jwt-service';
+import { JwtService } from '../application/jwt-service';
 import {
   ipSchema,
   IP_MODEL,
@@ -8,10 +8,10 @@ import {
   TOKEN_COLLECTION,
   usersSchema,
   USERS_COLLECTION,
-} from 'src/db';
-import { EmailAdapter } from 'src/email/email-service';
-import { UsersRepository } from 'src/users/users-repositorySQL';
-import { UsersService } from 'src/users/users-service';
+} from '../db';
+import { EmailAdapter } from '../email/email-service';
+import { UsersRepository } from '../users/users-repositorySQL';
+import { UsersService } from '../users/users-service';
 import { AuthController } from './auth-controller';
 import { AuthService } from './auth-service';
 

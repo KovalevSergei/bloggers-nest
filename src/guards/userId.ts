@@ -1,8 +1,8 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Request } from 'express';
-import { UsersDBTypeWithId } from 'src/users/users.type';
-import { JwtService } from 'src/application/jwt-service';
-import { UsersService } from 'src/users/users-service';
+import { UsersDBTypeWithId } from '../users/users.type';
+import { JwtService } from '../application/jwt-service';
+import { UsersService } from '../users/users-service';
 type RequestWithUser = Request & { user: UsersDBTypeWithId };
 @Injectable()
 export class UserId implements CanActivate {

@@ -5,11 +5,11 @@ import {
   HttpException,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { UsersDBTypeWithId } from 'src/users/users.type';
+import { UsersDBTypeWithId } from '../users/users.type';
 
 type RequestWithUser = Request & { user: UsersDBTypeWithId };
 import { ObjectId } from 'mongodb';
-import { ipType, IP_MODEL } from 'src/db';
+import { ipType, IP_MODEL } from '../db';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 @Injectable()

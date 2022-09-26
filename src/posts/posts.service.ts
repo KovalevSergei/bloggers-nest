@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { BloggersRepository } from 'src/bloggers/bloggersSQL.repository';
-import { CommentsRepository } from 'src/comments/comments-repository';
+import { BloggersRepository } from '../bloggers/bloggersSQL.repository';
+import { CommentsRepository } from '../comments/comments-repositorySQL';
 import {
   commentDBTypePagination,
   commentsDBPostIdType,
   commentsDBType2,
 } from 'src/comments/comments.type';
-import { Posts } from 'src/db.sql';
-import { UsersRepository } from 'src/users/users-repository';
-import { UsersDBType } from 'src/users/users.type';
+import { Posts } from '../db.sql';
+import { UsersRepository } from '../users/users-repositorySQL';
+import { UsersDBType } from '../users/users.type';
 import { PostsRepository } from './posts.repositorySQL';
 import {
   likePosts,

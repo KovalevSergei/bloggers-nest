@@ -15,17 +15,17 @@ import { Transform, TransformFnParams } from 'class-transformer';
 import { IsEmail, IsNotEmpty, Length } from 'class-validator';
 import { response } from 'express';
 import { send } from 'process';
-import { JwtService } from 'src/application/jwt-service';
-import { UsersService } from 'src/users/users-service';
+import { JwtService } from '../application/jwt-service';
+import { UsersService } from '../users/users-service';
 import { AuthService } from './auth-service';
 import { Request } from 'express';
 import { Response } from 'express';
-import { Auth } from 'src/guards/Auth';
-import { Mistake429 } from 'src/guards/Mistake429';
-import { UsersDBType } from 'src/users/users.type';
+import { Auth } from '../guards/Auth';
+import { Mistake429 } from '../guards/Mistake429';
+import { UsersDBType } from '../users/users.type';
 import { truncate } from 'fs';
-import { MailFindDoublicate } from 'src/guards/mailFindDoublicate';
-import { LoginFindDoublicate } from 'src/guards/loginFindDoublicate';
+import { MailFindDoublicate } from '../guards/mailFindDoublicate';
+import { LoginFindDoublicate } from '../guards/loginFindDoublicate';
 class AuthBody {
   @IsNotEmpty()
   @Transform(({ value }: TransformFnParams) => value?.trim())

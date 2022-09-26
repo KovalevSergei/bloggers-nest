@@ -1,98 +1,55 @@
 import { Injectable } from '@nestjs/common';
-
-import { likePosts, postsreturn, postsType } from './posts.type';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
-import { Bloggers, LikePosts, Posts, Users } from 'src/db.sql';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { POSTS_COLLECTION } from '../db';
+import {
+  likePosts,
+  likePostWithId,
+  postsreturn,
+  postsType,
+} from './posts.type';
+import { ObjectId } from 'mongodb';
 interface postsReturn {
   items: postsType[];
   totalCount: number;
 }
 @Injectable()
 export class PostsRepository {
-  postsModel: any;
-  constructor(@InjectDataSource() public dataSource: DataSource) {}
+  constructor(
+    @InjectModel(POSTS_COLLECTION)
+    private postsModel: Model<postsType>,
+    @InjectModel(POSTS_COLLECTION)
+    private likePostsModel: Model<likePostWithId>,
+  ) {}
   async getPosts(pageNumber: number, pageSize: number): Promise<postsreturn> {
-    const posts = await this.dataSource
-      .getRepository(Posts)
-      .createQueryBuilder('posts')
-      .leftJoinAndSelect('posts.blogger', 'blogger')
+    const posts = await this.postsModel
+      .find({}, { projection: { _id: 0 } })
       .limit(pageSize)
-      .offset((pageNumber - 1) * pageSize)
-      .getMany();
-    const items = posts.map((v) => ({
-      id: v.id,
-      title: v.title,
-      shortDescription: v.shortDescription,
-      content: v.content,
-      bloggerId: v.blogger.id,
-      bloggerName: v.blogger.name,
-      addedAt: v.addedAt,
-    }));
-    const totalCount = await this.dataSource
-      .getRepository(Posts)
-      .createQueryBuilder('posts')
-      .getCount();
+      .skip((pageNumber - 1) * pageSize)
+      .lean();
+    const totalCount = await this.postsModel.countDocuments();
     return {
       totalCount: totalCount,
-      items: items,
+      items: posts,
     };
   }
   async createPosts(postsnew: postsType): Promise<postsType> {
-    const post = new Posts();
-    post.id = postsnew.id;
-    post.title = postsnew.title;
-    post.shortDescription = postsnew.shortDescription;
-    post.content = postsnew.content;
-    post.addedAt = postsnew.addedAt;
+    const postsInstance = new this.postsModel();
+    postsInstance.id = postsnew.id;
 
-    const blogger = await this.dataSource.getRepository(Bloggers).findOne({
-      where: {
-        id: postsnew.bloggerId,
-      },
-    });
-    post.blogger = blogger;
+    postsInstance.title = postsnew.title;
+    postsInstance.shortDescription = postsnew.shortDescription;
+    postsInstance.content = postsnew.content;
+    postsInstance.bloggerId = postsnew.bloggerId;
+    postsInstance.bloggerName = postsnew.bloggerName;
+    postsInstance.addedAt = postsnew.addedAt;
 
-    const postEentity = await this.dataSource.getRepository(Posts).save(post);
-
+    await postsInstance.save();
     return postsnew;
-
-    /*   const a = await this.dataSource
-      .createQueryBuilder()
-      .insert()
-      .into(Posts)
-      .values([
-        {
-          id: postsnew.id,
-          title: postsnew.title,
-          shortDescription: postsnew.shortDescription,
-          content: postsnew.content,
-          addedAt: postsnew.addedAt,
-          bloggerId: postsnew.bloggerId,
-        },
-      ])
-      .execute();
-
-    return postsnew; */
   }
   async getpostsId(id: string): Promise<postsType | null> {
-    const res = await this.dataSource
-      .getRepository(Posts)
-      .createQueryBuilder('posts')
-      .leftJoinAndSelect('posts.blogger', 'blogger')
-      .where('posts.id=:id', { id })
-      .getMany();
-
-    const items = res.map((v) => ({
-      id: v.id,
-      title: v.title,
-      shortDescription: v.shortDescription,
-      content: v.content,
-      bloggerId: v.blogger.id,
-      bloggerName: v.blogger.name,
-      addedAt: v.addedAt,
-    }));
-    return items[0];
+    console.log(id);
+    return this.postsModel.findOne({ id: id }, { projection: { _id: 0 } });
   }
   async updatePostsId(
     id: string,
@@ -100,35 +57,21 @@ export class PostsRepository {
     shortDescription: string,
     content: string,
   ): Promise<boolean | null> {
-    const a = await this.dataSource
-      .createQueryBuilder()
-      .update(Posts)
-      .set({
-        title: title,
-        shortDescription: shortDescription,
-        content: content,
-      })
-      .where('posts.id=:id', { id })
-      .execute();
-    return a.affected === 1;
+    const postsnew = await this.postsModel.updateOne(
+      { id: id },
+      {
+        $set: {
+          title: title,
+          shortDescription: shortDescription,
+          content: content,
+        },
+      },
+    );
+    return postsnew.modifiedCount === 1;
   }
   async deletePosts(id: string): Promise<boolean> {
-    /*    const postsInstance = await this.dataSource
-      .getRepository(Posts)
-      .createQueryBuilder('posts')
-      .where('posts.id=:id', { id })
-      .getOne();
-    if (postsInstance === null) {
-      return false;
-    } */
-    const a = await this.dataSource
-      .createQueryBuilder()
-      .delete()
-      .from(Posts)
-      .where('posts.id=:id', { id })
-      .execute();
-
-    return a.affected === 1;
+    const result = await this.postsModel.deleteOne({ id: id });
+    return result.deletedCount === 1;
   }
 
   async getBloggersPost(
@@ -136,72 +79,57 @@ export class PostsRepository {
     pageSize: number,
     pageNumber: number,
   ): Promise<postsReturn> {
-    const items = await this.dataSource
-      .getRepository(Posts)
-      .createQueryBuilder('posts')
-      .leftJoinAndSelect('posts.blogger', 'blogger')
-      .where('posts.blogger.id=:bloggerId', { bloggerId })
+    const postsBloggerId = await this.postsModel
+      .find({ bloggerId: bloggerId })
+      .lean();
+    const totalCount = postsBloggerId.length;
+
+    const items = await this.postsModel
+      .find({ bloggerId: bloggerId }, { projection: { _id: 0 } })
       .limit(pageSize)
-      .offset((pageNumber - 1) * pageSize)
-      .getMany();
-    const items2 = items.map((v) => ({
-      id: v.id,
-      title: v.title,
-      shortDescription: v.shortDescription,
-      content: v.content,
-      bloggerId: v.blogger.id,
-      bloggerName: v.blogger.name,
-      addedAt: v.addedAt,
-    }));
-    const totalCount = items.length;
+      .skip((pageNumber - 1) * pageSize)
+      .lean();
     return {
       totalCount: totalCount,
-      items: items2,
+      items: items,
     };
   }
+  async getBloggersPost2(
+    bloggerId: string,
+    pageSize: number,
+    pageNumber: number,
+  ): Promise<postsReturn> {
+    const postsBloggerId = await this.postsModel
+      .find({ bloggerId: bloggerId })
+      .lean();
+    const totalCount = postsBloggerId.length;
 
+    const items = await this.postsModel
+      .find({ bloggerId: bloggerId }, { projection: { _id: 0 } })
+      .limit(pageSize)
+      .skip((pageNumber - 1) * pageSize)
+      .lean();
+    return {
+      totalCount: totalCount,
+      items: items,
+    };
+  }
   async createLikeStatus(likePostForm: likePosts): Promise<boolean> {
-    const likeStatus = new LikePosts();
-    likeStatus.addedAt = likePostForm.addedAt;
-    likeStatus.myStatus = likePostForm.myStatus;
-    const post = await this.dataSource
-      .getRepository(Posts)
-      .findOne({ where: { id: likePostForm.userId } });
-    const user = await this.dataSource
-      .getRepository(Users)
-      .findOne({ where: { id: likePostForm.userId } });
-    likeStatus.users = user;
-    likeStatus.posts = post;
-
-    await this.dataSource.getRepository(LikePosts).save(likeStatus);
-    /*   query(
-      `INSERT INTO
-"likeposts"("postsId","userId","myStatus","addedAt") 
-VALUES ($1,$2,$3,$4,$5,$6)`,
-      [
-        likePostForm.postsId,
-        likePostForm.userId,
-        likePostForm.myStatus,
-        likePostForm.addedAt,
-      ],
-    ); */
+    const likeInstance = new this.likePostsModel();
+    likeInstance.postsId = likePostForm.postsId;
+    likeInstance.userId = likePostForm.userId;
+    likeInstance.myStatus = likePostForm.myStatus;
+    likeInstance.addedAt = likePostForm.addedAt;
+    likeInstance.login = likePostForm.login;
+    await likeInstance.save();
     return true;
   }
   async deleteLike(postId: string, userId: string): Promise<boolean> {
-    const result = await this.dataSource
-      .createQueryBuilder()
-      .delete()
-      .from(LikePosts)
-      .where('posts.id=:postId', { postId })
-      .where('users.id=:userId', { userId })
-      .execute();
-
-    /*  query(
-      `SELECT * FROM "likeposts" 
-    WHERE "postsId"=$1 AND "userId"=$2`,
-      [postId, userId],
-    ); */
-    return result.affected === 1;
+    const result = await this.likePostsModel.deleteOne({
+      postsId: postId,
+      userId: userId,
+    });
+    return true;
   }
   async getLikeStatus(
     postId: string,
@@ -212,121 +140,74 @@ VALUES ($1,$2,$3,$4,$5,$6)`,
     myStatus: string;
   }> {
     const result = { likesCount: 0, dislikesCount: 0, myStatus: 'None' };
-    const likesCount = await this.dataSource
-      .getRepository(LikePosts)
-      .createQueryBuilder('likePosts')
-      .leftJoinAndSelect('likePosts.posts', 'posts')
-      .where('posts.id = :postId', { postId })
-      .where('likePosts.myStatus = :like', { like: 'Like' })
-      .getCount();
-    /*   .query(
-      `SELECT COUNT("postsId") as res2 FROM "likeposts" 
-      WHERE 
-      "postsId"= $1 and
-      "myStatus"='Like'`,
-      [postId], 
-    ); */
-    result.likesCount = likesCount;
-    const disLikes = await this.dataSource
-      .getRepository(LikePosts)
-      .createQueryBuilder('likePosts')
-      .leftJoinAndSelect('likePosts.posts', 'posts')
-      .where('posts.id=:postId', { postId })
-      .where('likePosts.myStatus=:a', { a: 'Dislike' })
-      .getCount();
-    /* .query(
-      `SELECT COUNT("postsId") as res3 FROM "likeposts" WHERE 
-        "postsId"= $1 and
-        "myStatus"='Dislike'`,
-      [postId],
-    ); */
-    result.dislikesCount = disLikes;
-    const my = await this.dataSource
-      .getRepository(LikePosts)
-      .createQueryBuilder('likeposts')
-      .leftJoinAndSelect('likeposts.posts', 'posts')
-      .where('posts.id=:postId', { postId })
-      .leftJoinAndSelect('likeposts.users', 'users')
-      .where('users.id=:userId', { userId })
-      .getMany();
-    /*   .query(
-      `SELECT * FROM "likeposts" WHERE 
-          "postsId"= $1 and
-          "userId"=$2`,
-      [postId, userId],
-    ); */
+    const likesCount = await this.likePostsModel.countDocuments({
+      postsId: postId,
+      myStatus: 'Like',
+    });
 
-    if (my.length === 0) {
+    result.likesCount = likesCount;
+    const disLikes = await this.likePostsModel.countDocuments({
+      postsId: postId,
+      myStatus: 'Dislike',
+    });
+
+    result.dislikesCount = disLikes;
+    const my = await this.likePostsModel.findOne({
+      postsId: postId,
+      userId: userId,
+    });
+
+    if (my === null) {
       return result;
     } else {
-      const a = my;
-      result.myStatus = a[0].myStatus;
+      const a = my as likePostWithId;
+      result.myStatus = a.myStatus;
     }
 
     return result;
   }
   async getNewestLikes(postId: string): Promise<likePosts[]> {
-    const result = await this.dataSource
-      .getRepository(LikePosts)
-      .createQueryBuilder('likeposts')
-      .leftJoinAndSelect('likeposts.users', 'users')
-      .leftJoinAndSelect('likeposts.posts', 'posts')
-      .where('posts.id=:postId', { postId })
-      .orderBy('adddedAt')
+    const result2 = await this.likePostsModel
+      .find({ postsId: postId, myStatus: 'Like' })
+      .sort({ addedAt: -1 })
       .limit(3)
-      .getMany();
+      .lean();
+    const result = [];
+    for (let i = 0; i < result2.length; i++) {
+      const a = {
+        postsId: result2[i].postsId,
+        userId: result2[i].userId,
+        login: result2[i].login,
+        myStatus: result2[i].myStatus,
+        addedAt: result2[i].addedAt,
+      };
+      result.push(a);
+    }
 
-    const result2 = result.map((v) => ({
-      postsId: v.posts.id,
-      userId: v.users.id,
-      login: v.users.login,
-      myStatus: v.myStatus,
-      addedAt: v.addedAt,
-    }));
-    /*  query(
-      `SELECT likeposts.*,login FROM "likeposts" 
-      LEFT JOIN "users"
-      ON users.id=likeposts."usersId"
-    WHERE "postsId"=$1 and "myStatus"=$2 ORDER BY "addedAt" DESC`,
-      [postId, 'Like'],
-    ); */
-
-    return result2;
+    return result;
   }
-
+  async getLikesBloggersPost(postsId: any): Promise<likePostWithId[]> {
+    const result = await this.likePostsModel.find({
+      myStatus: 'Like',
+      postsId: { $in: postsId },
+    });
+    return result;
+  }
+  async getDislikeBloggersPost(postsId: any): Promise<likePostWithId[]> {
+    const result = await this.likePostsModel.find({
+      myStatus: 'Dislike',
+      postsId: { $in: postsId },
+    });
+    return result;
+  }
   async findLikeStatus(
     postId: string,
     userId: string,
-  ): Promise<likePosts | null> {
-    const result = await this.dataSource
-      .getRepository(LikePosts)
-      .createQueryBuilder('likePosts')
-      .leftJoinAndSelect('likeposts:posts', 'posts')
-      .where('likeposts.posts.id=:postId', { postId })
-      .leftJoinAndSelect('likeposts.users', 'users')
-      .where('likeposts.users.id=:userId', { userId })
-      .getMany();
-    if (result.length === 0) {
-      return null;
-    }
-    const v = result;
-    const res = {
-      postId: v[0].posts.id,
-      addedAt: v[0].addedAt,
-      myStatus: v[0].myStatus,
-      login: v[0].users.login,
-      userId: v[0].users.id,
-    };
-
-    /* query(
-      `SELECT likeposts.*,login FROM "likeposts" 
-      LEFT JOIN "users"
-      WHERE postId=$1 and "userId"=$2`,
-      [postId, userId],
-    ); */
-    if (result.length === 0) {
-      return null;
-    }
-    return res[0];
+  ): Promise<likePostWithId | null> {
+    const result = await this.likePostsModel.findOne({
+      postsId: postId,
+      userId: userId,
+    });
+    return result;
   }
 }
