@@ -75,7 +75,7 @@ export class BloggersRepository {
     youtubeUrl: string,
   ): Promise<boolean> {
     const bloggersInstance = await this.bloggersModel.findOne({ id: id });
-    console.log(id, bloggersInstance);
+
     /*  const result = await bloggersModel.updateOne(
       { id: id },
       { $set: { name: name, youtubeUrl: youtubeUrl } }

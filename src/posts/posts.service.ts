@@ -59,7 +59,6 @@ export class PostsService {
     bloggerId: string,
   ): Promise<postsType | boolean> {
     const nameblog = await this.bloggersRepository.getBloggersById(bloggerId);
-    console.log(nameblog);
     if (nameblog) {
       const postnew = {
         id: Number(new Date()).toString(),

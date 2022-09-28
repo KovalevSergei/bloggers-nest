@@ -5,6 +5,7 @@ import { TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { JwtService } from './application/jwt-service';
 import { AuthModule } from './authorization/auth-module';
 import { BloggersModule } from './bloggers/bloggers.module';
 import { CommentsModule } from './comments/commetns-module';

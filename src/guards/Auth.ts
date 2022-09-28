@@ -25,7 +25,7 @@ export class Auth implements CanActivate {
     if (!req.headers.authorization) {
       throw new UnauthorizedException();
     }
-    const token = req.headers.authorization?.split(' ')[1];
+    const token = req.headers.authorization.split(' ')[1];
 
     const userId = await this.jwtService.getUserIdByToken(token);
 
@@ -34,6 +34,7 @@ export class Auth implements CanActivate {
 
       return true;
     }
+
     throw new UnauthorizedException();
   }
 

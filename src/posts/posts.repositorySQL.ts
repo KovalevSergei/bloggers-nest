@@ -48,7 +48,6 @@ export class PostsRepository {
     return postsnew;
   }
   async getpostsId(id: string): Promise<postsType | null> {
-    console.log(id);
     return this.postsModel.findOne({ id: id }, { projection: { _id: 0 } });
   }
   async updatePostsId(

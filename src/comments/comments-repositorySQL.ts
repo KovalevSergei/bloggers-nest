@@ -40,11 +40,11 @@ export class CommentsRepository {
     } else {
       return false;
     } */
-    await this.commentsModel.updateOne(
+    const a = await this.commentsModel.updateOne(
       { id: commentId },
       { $set: { content: content } },
     );
-    return true;
+    return a.modifiedCount === 1;
   }
   async getComment(id: string): Promise<commentsDBType | null> {
     return this.commentsModel.findOne(

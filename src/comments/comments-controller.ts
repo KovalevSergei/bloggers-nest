@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   HttpCode,
   NotFoundException,
@@ -10,7 +11,8 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { IsArray, IsIn } from 'class-validator';
+import { Transform, TransformFnParams } from 'class-transformer';
+import { IsArray, IsIn, IsNotEmpty, Length } from 'class-validator';
 import { NotFoundError } from 'rxjs';
 import { Auth } from '../guards/Auth';
 import { UserFind } from '../guards/userFind';
@@ -23,24 +25,40 @@ class like {
   @IsIn(status2)
   likeStatus: string;
 }
+class CommetnsUpdate {
+  @IsNotEmpty()
+  @Transform(({ value }: TransformFnParams) => value?.trim())
+  @Length(1, 1000)
+  content: string;
+}
 @Controller('comments')
 export class CommentsController {
   constructor(protected commentsService: CommentsService) {}
   @UseGuards(Auth)
-  @UseGuards(UserFind)
+  @UseGuards(UserId)
   @Put(':commentId')
   @HttpCode(204)
   async updateContent(
     @Param('commentId') commentId: string,
-    @Body('content') content: string,
+    @Body() body: CommetnsUpdate,
+    @Req() req: RequestWithUser,
   ) {
+    const commentById = await this.commentsService.getComment(commentId);
+    const userId = req.user?.id || '1';
     ///const useriD = req.user?.id || "1";
+    if (commentById.userId !== userId) {
+      throw new ForbiddenException();
+    }
     const contentnew = await this.commentsService.updateContent(
-      content,
+      body.content,
       commentId,
       // useriD
     );
-    return;
+    if (contentnew) {
+      return;
+    } else {
+      throw new NotFoundException('Comment Not Found');
+    }
   }
   @UseGuards(UserId)
   @Get(':commentId')
@@ -71,11 +89,23 @@ export class CommentsController {
     }
   }
   @UseGuards(Auth)
-  @UseGuards(UserFind)
+  //@UseGuards(UserFind)
   @Delete(':id')
-  async deleteComment(@Param('id') id: string) {
+  @HttpCode(204)
+  async deleteComment(@Param('id') id: string, @Req() req: RequestWithUser) {
+    const commentById = await this.commentsService.getComment(id);
+    if (!commentById) {
+      throw new NotFoundException('Comment Not Found');
+    }
+    const userId = req.user?.id || '1';
+    ///const useriD = req.user?.id || "1";
+    if (commentById.userId !== userId) {
+      throw new ForbiddenException();
+    }
     const isdelete = await this.commentsService.deleteComment(id);
-    return;
+    if (isdelete) {
+      return;
+    }
   }
   @UseGuards(Auth)
   @Put(':commentId/like-status')
@@ -90,7 +120,6 @@ export class CommentsController {
       throw new NotFoundException();
     }
     const userId = req.user?.id || '1';
-    console.log(req.user);
     const result = await this.commentsService.updateLikeComments(
       commentId,
       userId,

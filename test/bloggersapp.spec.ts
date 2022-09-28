@@ -1,4 +1,4 @@
-import { Test, TestingModuleBuilder } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import * as request from 'supertest';
 import { Connection } from 'mongoose';
 import { AppModule } from '../src/app.module';
@@ -11,8 +11,6 @@ import {
 import * as cookieParser from 'cookie-parser';
 import { HttpExceptionFilter } from '../src/exception-filter';
 import { bloggerStub } from './Stub/bloggers.stub';
-import { response } from 'express';
-import { UsingJoinColumnIsNotAllowedError } from 'typeorm';
 
 jest.setTimeout(5000);
 
@@ -20,7 +18,7 @@ describe('BloggersController', () => {
   let dbConnection: Connection;
   let httpServer: any;
   let app: INestApplication;
-
+  let blogger;
   beforeAll(async () => {
     const module = await Test.createTestingModule({
       imports: [AppModule],
@@ -55,22 +53,36 @@ describe('BloggersController', () => {
     dbConnection = DBService.getConnection();
     httpServer = app.getHttpServer();
   });
-
+  beforeEach(async () => {
+    blogger = await createBlogger();
+  });
   afterEach(async () => {
-    await dbConnection.collection('bloggers').deleteMany({});
-    // const collections = dbConnection.collections;
+    // await dbConnection.collection('bloggers').deleteMany({});
+    // await dbConnection.collection('posts').deleteMany({});
+    const collections = dbConnection.collections;
 
-    // for (const key in collections) {
-    //   const collection = collections[key];
-    //   await collection.deleteMany({});
-    // }
+    for (const key in collections) {
+      const collection = collections[key];
+      await collection.deleteMany({});
+    }
   });
 
-  afterAll(async () => {
-    await app.close();
-    await httpServer.close();
+  afterAll((done) => {
+    app.close();
+    httpServer.close();
+    dbConnection.close();
+    done();
   });
-
+  async function createBlogger() {
+    const a = await request(httpServer)
+      .post('/bloggers')
+      .auth('admin', 'qwerty')
+      .send({
+        name: 'Vasya',
+        youtubeUrl: 'https://aaaaaaaaaaaaaaaaaa.ru',
+      });
+    return a;
+  }
   it('should return all bloggers with getBloggersPagination /GET', async () => {
     await dbConnection
       .collection('bloggers')
@@ -248,5 +260,170 @@ describe('BloggersController', () => {
       .delete('/bloggers/' + createdBlogger.body.id)
       .auth('admin', 'qwerty')
       .expect(204);
+  });
+  it('blogger by id /POSt posts', async () => {
+    const createdBlogger = await request(httpServer)
+      .post('/bloggers')
+      .auth('admin', 'qwerty')
+      .send({
+        name: 'Vasya',
+        youtubeUrl: 'https://aaaaaaaaaaaaaaaaaa.ru',
+      });
+    const postBlogger = await request(httpServer)
+      .post('/bloggers/' + createdBlogger.body.id + '/posts')
+      .auth('admin', 'qwerty')
+      .send({
+        title: 'ergerwgerwg',
+        shortDescription: 'svggssdgdgs',
+        content: 'egnjkewg',
+      })
+      .expect(201);
+    expect(postBlogger.body.content).toBe('egnjkewg');
+    expect(postBlogger.body.bloggerId).toBe(createdBlogger.body.id);
+  });
+  it('blogger by id /POSt posts not Valid title', async () => {
+    const createdBlogger = await request(httpServer)
+      .post('/bloggers')
+      .auth('admin', 'qwerty')
+      .send({
+        name: 'Vasya',
+        youtubeUrl: 'https://aaaaaaaaaaaaaaaaaa.ru',
+      });
+    const postBlogger = await request(httpServer)
+      .post('/bloggers/' + createdBlogger.body.id + '/posts')
+      .auth('admin', 'qwerty')
+      .send({
+        title:
+          'ergerwgerwgdkvfdklfvkvdvdfvdfvjdshfbvdshbdfshbkjdhfbkjdfhbkjdfhbkjdfhbdfkjhbkjdhf',
+        shortDescription: 'svggssdgdgs',
+        content: 'egnjkewg',
+      })
+      .expect(400);
+  });
+  it('blogger by id /POSt posts Unautarazition', async () => {
+    const createdBlogger = await request(httpServer)
+      .post('/bloggers')
+      .auth('admin', 'qwerty')
+      .send({
+        name: 'Vasya',
+        youtubeUrl: 'https://aaaaaaaaaaaaaaaaaa.ru',
+      });
+    const postBlogger = await request(httpServer)
+      .post('/bloggers/' + createdBlogger.body.id + '/posts')
+      .send({
+        title: 'ergerwgerwgdkvfdklfvk',
+        shortDescription: 'svggssdgdgs',
+        content: 'egnjkewg',
+      })
+      .expect(401);
+  });
+  it('blogger by id /POSt posts not Valid shortDescrirpion', async () => {
+    const createdBlogger = await request(httpServer)
+      .post('/bloggers')
+      .auth('admin', 'qwerty')
+      .send({
+        name: 'Vasya',
+        youtubeUrl: 'https://aaaaaaaaaaaaaaaaaa.ru',
+      });
+    const postBlogger = await request(httpServer)
+      .post('/bloggers/' + createdBlogger.body.id + '/posts')
+      .auth('admin', 'qwerty')
+      .send({
+        title: 'ergerwgerwgdkvfdklfvkvdvdfvdfv',
+        shortDescription:
+          'svggssdgdgsvdbvfdfkjsbvfdsbvdmnbvdmnsfbvdsfbvdhfkbvdfbvhjdfbvhjdfbvjdhsfbvjdhfbvjdhfbvhjdfbvhjdfbvdfsbkjdeshgkjdhfsvkjndfvkjnruibvuibdvbriuvbrivbribvribv',
+        content: 'egnjkewg',
+      })
+      .expect(400);
+  });
+  it('blogger by id /POSt posts not Valid content', async () => {
+    const createdBlogger = await request(httpServer)
+      .post('/bloggers')
+      .auth('admin', 'qwerty')
+      .send({
+        name: 'Vasya',
+        youtubeUrl: 'https://aaaaaaaaaaaaaaaaaa.ru',
+      });
+    const postBlogger = await request(httpServer)
+      .post('/bloggers/' + createdBlogger.body.id + '/posts')
+      .auth('admin', 'qwerty')
+      .send({
+        title: 'ergerwgerwgdkvfdklfvkvdvdfvdfv',
+        shortDescription:
+          'svggssdgdgsvdbvfdfkjsbvfdsbvdmnbvdmnsfbvdsfbvdhfkbvdfbvhjdfbvhjdfbvjdh',
+        content:
+          'egnjkewgsvggssdgdgsvdbvfdfkjsbvfdsbvdmnbvdmnsfbvdsfbvdhfkbvdfbvhjdfbvhjdfbvjdhsfbvjdhfbvjdhfbvhjdfbvhjdfbvdfsbkjdeshgkjdhfsvkjndfvkjnruibvuibdvbriuvbrivbribvribvsvggssdgdgsvdbvfdfkjsbvfdsbvdmnbvdmnsfbvdsfbvdhfkbvdfbvhjdfbvhjdfbvjdhsfbvjdhfbvjdhfbvhjdfbvhjdfbvdfsbkjdeshgkjdhfsvkjndfvkjnruibvuibdvbriuvbrivbribvribvsvggssdgdgsvdbvfdfkjsbvfdsbvdmnbvdmnsfbvdsfbvdhfkbvdfbvhjdfbvhjdfbvjdhsfbvjdhfbvjdhfbvhjdfbvhjdfbvdfsbkjdeshgkjdhfsvkjndfvkjnruibvuibdvbriuvbrivbribvribvsvggssdgdgsvdbvfdfkjsbvfdsbvdmnbvdmnsfbvdsfbvdhfkbvdfbvhjdfbvhjdfbvjdhsfbvjdhfbvjdhfbvhjdfbvhjdfbvdfsbkjdeshgkjdhfsvkjndfvkjnruibvuibdvbriuvbrivbribvribvsvggssdgdgsvdbvfdfkjsbvfdsbvdmnbvdmnsfbvdsfbvdhfkbvdfbvhjdfbvhjdfbvjdhsfbvjdhfbvjdhfbvhjdfbvhjdfbvdfsbkjdeshgkjdhfsvkjndfvkjnruibvuibdvbriuvbrivbribvribvsvggssdgdgsvdbvfdfkjsbvfdsbvdmnbvdmnsfbvdsfbvdhfkbvdfbvhjdfbvhjdfbvjdhsfbvjdhfbvjdhfbvhjdfbvhjdfbvdfsbkjdeshgkjdhfsvkjndfvkjnruibvuibdvbriuvbrivbribvribvsvggssdgdgsvdbvfdfkjsbvfdsbvdmnbvdmnsfbvdsfbvdhfkbvdfbvhjdfbvhjdfbvjdhsfbvjdhfbvjdhfbvhjdfbvhjdfbvdfsbkjdeshgkjdhfsvkjndfvkjnruibvuibdvbriuvbrivbribvribvsvggssdgdgsvdbvfdfkjsbvfdsbvdmnbvdmnsfbvdsfbvdhfkbvdfbvhjdfbvhjdfbvjdhsfbvjdhfbvjdhfbvhjdfbvhjdfbvdfsbkjdeshgkjdhfsvkjndfvkjnruibvuibdvbriuvbrivbribvribvsvggssdgdgsvdbvfdfkjsbvfdsbvdmnbvdmnsfbvdsfbvdhfkbvdfbvhjdfbvhjdfbvjdhsfbvjdhfbvjdhfbvhjdfbvhjdfbvdfsbkjdeshgkjdhfsvkjndfvkjnruibvuibdvbriuvbrivbribvribvsvggssdgdgsvdbvfdfkjsbvfdsbvdmnbvdmnsfbvdsfbvdhfkbvdfbvhjdfbvhjdfbvjdhsfbvjdhfbvjdhfbvhjdfbvhjdfbvdfsbkjdeshgkjdhfsvkjndfvkjnruibvuibdvbriuvbrivbribvribvsvggssdgdgsvdbvfdfkjsbvfdsbvdmnbvdmnsfbvdsfbvdhfkbvdfbvhjdfbvhjdfbvjdhsfbvjdhfbvjdhfbvhjdfbvhjdfbvdfsbkjdeshgkjdhfsvkjndfvkjnruibvuibdvbriuvbrivbribvribvsvggssdgdgsvdbvfdfkjsbvfdsbvdmnbvdmnsfbvdsfbvdhfkbvdfbvhjdfbvhjdfbvjdhsfbvjdhfbvjdhfbvhjdfbvhjdfbvdfsbkjdeshgkjdhfsvkjndfvkjnruibvuibdvbriuvbrivbribvribvsvggssdgdgsvdbvfdfkjsbvfdsbvdmnbvdmnsfbvdsfbvdhfkbvdfbvhjdfbvhjdfbvjdhsfbvjdhfbvjdhfbvhjdfbvhjdfbvdfsbkjdeshgkjdhfsvkjndfvkjnruibvuibdvbriuvbrivbribvribv',
+      })
+      .expect(400);
+    expect(postBlogger.body.message).toStrictEqual([
+      {
+        field: 'content',
+        message: 'content must be shorter than or equal to 1000 characters',
+      },
+    ]);
+  });
+  it('blogger by id /POSt posts not Valid content', async () => {
+    const createdBlogger = await request(httpServer)
+      .post('/bloggers')
+      .auth('admin', 'qwerty')
+      .send({
+        name: 'Vasya',
+        youtubeUrl: 'https://aaaaaaaaaaaaaaaaaa.ru',
+      });
+    const postBlogger = await request(httpServer)
+      .post('/bloggers/' + 12 + '/posts')
+      .auth('admin', 'qwerty')
+      .send({
+        title: 'ergerwgerwgdkvfdklfvkvdvdfvdfv',
+        shortDescription:
+          'svggssdgdgsvdbvfdfkjsbvfdsbvdmnbvdmnsfbvdsfbvdhfkbvdfbvhjdfbvhjdfbvjdh',
+        content:
+          'svkjndfvkjnruibvuibdvbriuvbrivbribvribvvggssdgdgsvdbvvkjndfvkjnruibvuibdvbriuvbrivbribvribvsvggssdgdgsvdbvfdfkjsbvfdsbvdmnbvdmnsfbvdsfbvdhfkbvdf',
+      })
+      .expect(404);
+  });
+  it('blogger by get posts ', async () => {
+    const createdBlogger = await request(httpServer)
+      .post('/bloggers')
+      .auth('admin', 'qwerty')
+      .send({
+        name: 'Vasya',
+        youtubeUrl: 'https://aaaaaaaaaaaaaaaaaa.ru',
+      });
+    const postBlogger = await request(httpServer)
+      .post('/bloggers/' + createdBlogger.body.id + '/posts')
+      .auth('admin', 'qwerty')
+      .send({
+        title: 'ergerwgerwg',
+        shortDescription: 'svggssdgdgs',
+        content: 'egnjkewg',
+      })
+      .expect(201);
+    const postBloggerget = await request(httpServer)
+      .get('/bloggers/' + createdBlogger.body.id + '/posts')
+      .expect(200);
+    expect(postBloggerget.body.totalCount).toBe(1);
+  });
+  it('blogger by get posts 404 not exist ', async () => {
+    const createdBlogger = await request(httpServer)
+      .post('/bloggers')
+      .auth('admin', 'qwerty')
+      .send({
+        name: 'Vasya',
+        youtubeUrl: 'https://aaaaaaaaaaaaaaaaaa.ru',
+      });
+    const postBlogger = await request(httpServer)
+      .post('/bloggers/' + createdBlogger.body.id + '/posts')
+      .auth('admin', 'qwerty')
+      .send({
+        title: 'ergerwgerwg',
+        shortDescription: 'svggssdgdgs',
+        content: 'egnjkewg',
+      })
+      .expect(201);
+    const postBloggerget = await request(httpServer)
+      .get('/bloggers/' + 12 + '/posts')
+      .expect(404);
+    expect(postBloggerget.body).toBe('If specific blogger is not exists');
   });
 });

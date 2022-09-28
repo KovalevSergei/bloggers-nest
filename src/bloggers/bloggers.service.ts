@@ -52,7 +52,6 @@ export class BloggersService {
   }
   async getBloggersById(id: string): Promise<bloggersType | null> {
     const bloggers = await this.bloggersRepository.getBloggersById(id);
-    console.log(bloggers);
     if (!bloggers) {
       return null;
     } else {

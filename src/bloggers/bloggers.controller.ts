@@ -21,6 +21,20 @@ import { postsType } from '../posts/posts.type';
 import { UsersDBTypeWithId } from '../users/users.type';
 import { BloggersService } from './bloggers.service';
 type RequestWithUser = Request & { user: UsersDBTypeWithId };
+class bloggerPosts {
+  @IsNotEmpty()
+  @Transform(({ value }: TransformFnParams) => value?.trim())
+  @Length(1, 30)
+  title: string;
+  @IsNotEmpty()
+  @Transform(({ value }: TransformFnParams) => value?.trim())
+  @Length(1, 100)
+  shortDescription: string;
+  @IsNotEmpty()
+  @Transform(({ value }: TransformFnParams) => value?.trim())
+  @Length(1, 1000)
+  content: string;
+}
 class UpdateBloggers {
   @IsNotEmpty()
   @Transform(({ value }: TransformFnParams) => value?.trim())
@@ -117,15 +131,13 @@ export class BloggersController {
   @Post(':bloggerId/posts')
   async createBloggersPost(
     @Param('bloggerId') bloggerId: string,
-    @Body('title') title: string,
-    @Body('shortDescription') shortDescription: string,
-    @Body('content') content: string,
+    @Body() body: bloggerPosts,
   ) {
     const bloggersnew = await this.bloggersService.createBloggersPost(
       bloggerId,
-      title,
-      shortDescription,
-      content,
+      body.title,
+      body.shortDescription,
+      body.content,
     );
 
     if (bloggersnew === false) {
@@ -158,7 +170,6 @@ export class BloggersController {
     @Query('PageNumber') PageNumber: number,
     @Param('id') id: string,
   ) {
-    console.log('PROVERKA');
     const userId = req.user?.id;
 
     const getPostBlogger = await this.bloggersService.getBloggersPost(
