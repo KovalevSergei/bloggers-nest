@@ -709,4 +709,192 @@ describe('CommentsController', () => {
       .send({ likeStatus: 'None' })
       .expect(204);
   });
+
+  it(' / get comments 200 like proverka my Status like', async () => {
+    const createdPost = await request(httpServer)
+      .post('/posts')
+      .auth('admin', 'qwerty')
+      .send({
+        title: 'ergerwgerwg',
+        shortDescription: 'svggssdgdgs',
+        content: 'egnjkewg',
+        bloggerId: blogger._body.id,
+      })
+      .expect(201);
+    const createdUsers = await request(httpServer)
+      .post('/users')
+      .auth('admin', 'qwerty')
+      .send({
+        login: 'Vasya',
+        email: 'cre@qwe.ru',
+        password: '21457346578',
+      })
+      .expect(201);
+    const createdUsers2 = await request(httpServer)
+      .post('/users')
+      .auth('admin', 'qwerty')
+      .send({
+        login: 'Vasytta',
+        email: 'crree@qwe.ru',
+        password: '21457346578',
+      })
+      .expect(201);
+    const logininzationUserAndCreatedTokens = await request(httpServer)
+      .post('/auth/login')
+      .send({ login: 'Vasya', password: '21457346578' });
+    const logininzationUserAndCreatedTokens2 = await request(httpServer)
+      .post('/auth/login')
+      .send({ login: 'Vasytta', password: '21457346578' });
+    const token = logininzationUserAndCreatedTokens.body.accessToken;
+    const token2 = logininzationUserAndCreatedTokens2.body.accessToken;
+    const comment = await request(httpServer)
+      .post('/posts/' + createdPost.body.id + '/comments')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ content: 'savhbdhfsbvdhfjsbvhjdfbv' })
+      .expect(201);
+    const commentPutLike = await request(httpServer)
+      .put('/comments/' + comment.body.id + '/like-status')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ likeStatus: 'Like' })
+      .expect(204);
+    const commentPutLike2 = await request(httpServer)
+      .put('/comments/' + comment.body.id + '/like-status')
+      .set('Authorization', `Bearer ${token2}`)
+      .send({ likeStatus: 'Like' })
+      .expect(204);
+
+    const getComment = await request(httpServer)
+      .get('/comments/' + comment.body.id)
+      .set('Authorization', `Bearer ${token2}`);
+    expect(200);
+
+    expect(getComment.body.likesInfo.likesCount).toBe(2);
+    expect(getComment.body.likesInfo.myStatus).toBe('Like');
+  });
+
+  it(' / get comments 200 like proverka my Status Dislike', async () => {
+    const createdPost = await request(httpServer)
+      .post('/posts')
+      .auth('admin', 'qwerty')
+      .send({
+        title: 'ergerwgerwg',
+        shortDescription: 'svggssdgdgs',
+        content: 'egnjkewg',
+        bloggerId: blogger._body.id,
+      })
+      .expect(201);
+    const createdUsers = await request(httpServer)
+      .post('/users')
+      .auth('admin', 'qwerty')
+      .send({
+        login: 'Vasya',
+        email: 'cre@qwe.ru',
+        password: '21457346578',
+      })
+      .expect(201);
+    const createdUsers2 = await request(httpServer)
+      .post('/users')
+      .auth('admin', 'qwerty')
+      .send({
+        login: 'Vasytta',
+        email: 'crree@qwe.ru',
+        password: '21457346578',
+      })
+      .expect(201);
+    const logininzationUserAndCreatedTokens = await request(httpServer)
+      .post('/auth/login')
+      .send({ login: 'Vasya', password: '21457346578' });
+    const logininzationUserAndCreatedTokens2 = await request(httpServer)
+      .post('/auth/login')
+      .send({ login: 'Vasytta', password: '21457346578' });
+    const token = logininzationUserAndCreatedTokens.body.accessToken;
+    const token2 = logininzationUserAndCreatedTokens2.body.accessToken;
+    const comment = await request(httpServer)
+      .post('/posts/' + createdPost.body.id + '/comments')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ content: 'savhbdhfsbvdhfjsbvhjdfbv' })
+      .expect(201);
+    const commentPutLike = await request(httpServer)
+      .put('/comments/' + comment.body.id + '/like-status')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ likeStatus: 'Like' })
+      .expect(204);
+    const commentPutLike2 = await request(httpServer)
+      .put('/comments/' + comment.body.id + '/like-status')
+      .set('Authorization', `Bearer ${token2}`)
+      .send({ likeStatus: 'Dislike' })
+      .expect(204);
+
+    const getComment = await request(httpServer)
+      .get('/comments/' + comment.body.id)
+      .set('Authorization', `Bearer ${token2}`);
+    expect(200);
+
+    expect(getComment.body.likesInfo.likesCount).toBe(1);
+    expect(getComment.body.likesInfo.dislikesCount).toBe(1);
+    expect(getComment.body.likesInfo.myStatus).toBe('Dislike');
+  });
+
+  it(' / get comments 200 like proverka my Status Dislike', async () => {
+    const createdPost = await request(httpServer)
+      .post('/posts')
+      .auth('admin', 'qwerty')
+      .send({
+        title: 'ergerwgerwg',
+        shortDescription: 'svggssdgdgs',
+        content: 'egnjkewg',
+        bloggerId: blogger._body.id,
+      })
+      .expect(201);
+    const createdUsers = await request(httpServer)
+      .post('/users')
+      .auth('admin', 'qwerty')
+      .send({
+        login: 'Vasya',
+        email: 'cre@qwe.ru',
+        password: '21457346578',
+      })
+      .expect(201);
+    const createdUsers2 = await request(httpServer)
+      .post('/users')
+      .auth('admin', 'qwerty')
+      .send({
+        login: 'Vasytta',
+        email: 'crree@qwe.ru',
+        password: '21457346578',
+      })
+      .expect(201);
+    const logininzationUserAndCreatedTokens = await request(httpServer)
+      .post('/auth/login')
+      .send({ login: 'Vasya', password: '21457346578' });
+    const logininzationUserAndCreatedTokens2 = await request(httpServer)
+      .post('/auth/login')
+      .send({ login: 'Vasytta', password: '21457346578' });
+    const token = logininzationUserAndCreatedTokens.body.accessToken;
+    const token2 = logininzationUserAndCreatedTokens2.body.accessToken;
+    const comment = await request(httpServer)
+      .post('/posts/' + createdPost.body.id + '/comments')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ content: 'savhbdhfsbvdhfjsbvhjdfbv' })
+      .expect(201);
+    const commentPutLike = await request(httpServer)
+      .put('/comments/' + comment.body.id + '/like-status')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ likeStatus: 'Dislike' })
+      .expect(204);
+    const commentPutLike2 = await request(httpServer)
+      .put('/comments/' + comment.body.id + '/like-status')
+      .set('Authorization', `Bearer ${token2}`)
+      .send({ likeStatus: 'Dislike' })
+      .expect(204);
+
+    const getComment = await request(httpServer).get(
+      '/comments/' + comment.body.id,
+    );
+    expect(200);
+
+    expect(getComment.body.likesInfo.likesCount).toBe(0);
+    expect(getComment.body.likesInfo.dislikesCount).toBe(2);
+    expect(getComment.body.likesInfo.myStatus).toBe('None');
+  });
 });

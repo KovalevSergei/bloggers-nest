@@ -48,6 +48,10 @@ class CreateUser {
   @Length(6, 20)
   password: string;
 }
+class Email {
+  @IsEmail()
+  email: string;
+}
 class CreateUserCode {
   @IsNotEmpty()
   @Transform(({ value }: TransformFnParams) => value?.trim())
@@ -110,7 +114,7 @@ export class AuthController {
   @UseGuards(Mistake429)
   @Post('registration-email-resending')
   @HttpCode(204)
-  async registrationEmailResending(@Body() body: CreateUser) {
+  async registrationEmailResending(@Body() body: Email) {
     const result = await this.authService.confirmEmail(body.email);
     if (result) {
       return;
@@ -162,6 +166,7 @@ export class AuthController {
     return;
   }
   @Post('refresh-token')
+  @HttpCode(200)
   async refreshToken(
     @Res({ passthrough: true }) res: Response,
     @Req() req: Request,
@@ -197,12 +202,14 @@ export class AuthController {
     return { accessToken: token };
   }
   @Post('logout')
+  @HttpCode(204)
   async logout(@Req() req: Request) {
     const refreshToken = req.cookies?.refreshToken;
     const tokenExpire = await this.jwtService.getUserIdByToken(refreshToken);
     if (tokenExpire === null) {
       throw new UnauthorizedException();
     }
+    return;
   }
   @UseGuards(Auth)
   @Get('me')
