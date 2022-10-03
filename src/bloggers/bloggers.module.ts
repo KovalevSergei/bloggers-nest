@@ -25,7 +25,17 @@ import { BloggersRepository as BloggersMongooseRepository } from './bloggersSQL.
 //import { BloggersRepository as BloggersSQLRepository } from './bloggersSQL.repository';
 import { BloggersService } from './bloggers.service';
 import { Bloggers } from '../db.sql';
-
+import { CreateBloggersUseCase } from './use-cases/createBloggerUseCase';
+import { UpdateBloggersUseCase } from './use-cases/updateBloggerUseCase';
+import { CreateBloggersPostUseCase } from './use-cases/createBloggerPostUseCase';
+import { DeleteBloggersByIdUseCase } from './use-cases/deleteBloggersByIdUseCase';
+import { BloggersRepositoryQuery } from './bloggers.repositoryQueryMongo';
+const useCases = [
+  CreateBloggersUseCase,
+  UpdateBloggersUseCase,
+  CreateBloggersPostUseCase,
+  DeleteBloggersByIdUseCase,
+];
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -51,6 +61,8 @@ import { Bloggers } from '../db.sql';
     JwtService,
     UsersService,
     UsersRepository,
+    BloggersRepositoryQuery,
+    ...useCases,
   ],
   //exports: [BloggersRepository],
 })

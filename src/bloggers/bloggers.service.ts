@@ -36,20 +36,20 @@ export class BloggersService {
     );
     return result;
   }
-  async createBloggers(
-    name: string,
-    youtubeUrl: string,
-  ): Promise<bloggersType> {
-    const bloggersnew = {
-      id: Number(new Date()).toString(),
-      name: name,
-      youtubeUrl: youtubeUrl,
-    };
+  // async createBloggers(
+  //   name: string,
+  //   youtubeUrl: string,
+  // ): Promise<bloggersType> {
+  //   const bloggersnew = {
+  //     id: Number(new Date()).toString(),
+  //     name: name,
+  //     youtubeUrl: youtubeUrl,
+  //   };
 
-    const result = this.bloggersRepository.createBloggers(bloggersnew);
+  //   const result = this.bloggersRepository.createBloggers(bloggersnew);
 
-    return result;
-  }
+  //   return result;
+  // }
   async getBloggersById(id: string): Promise<bloggersType | null> {
     const bloggers = await this.bloggersRepository.getBloggersById(id);
     if (!bloggers) {
@@ -63,42 +63,42 @@ export class BloggersService {
       return bloggers2;
     }
   }
-  async deleteBloggersById(id: string): Promise<boolean> {
-    return this.bloggersRepository.deleteBloggersById(id);
-  }
-  async updateBloggers(
+  // async deleteBloggersById(id: string): Promise<boolean> {
+  //   return this.bloggersRepository.deleteBloggersById(id);
+  // }
+  /* async updateBloggers(
     id: string,
     name: string,
     youtubeUrl: string,
   ): Promise<boolean> {
     return await this.bloggersRepository.updateBloggers(id, name, youtubeUrl);
-  }
-  async createBloggersPost(
-    bloggerId: string,
-    title: string,
-    shortDescription: string,
-    content: string,
-  ): Promise<postsType | boolean> {
-    const findName = await this.bloggersRepository.getBloggersById(bloggerId);
+  } */
+  // async createBloggersPost(
+  //   bloggerId: string,
+  //   title: string,
+  //   shortDescription: string,
+  //   content: string,
+  // ): Promise<postsType | boolean> {
+  //   const findName = await this.bloggersRepository.getBloggersById(bloggerId);
 
-    if (!findName) {
-      return false;
-    } else {
-      const postsnew = {
-        id: Number(new Date()).toString(),
-        title: title,
-        shortDescription: shortDescription,
-        content: content,
-        bloggerId: bloggerId,
-        bloggerName: findName.name,
-        addedAt: new Date(),
-      };
+  //   if (!findName) {
+  //     return false;
+  //   } else {
+  //     const postsnew = {
+  //       id: Number(new Date()).toString(),
+  //       title: title,
+  //       shortDescription: shortDescription,
+  //       content: content,
+  //       bloggerId: bloggerId,
+  //       bloggerName: findName.name,
+  //       addedAt: new Date(),
+  //     };
 
-      const result = await this.postsRepository.createPosts(postsnew);
+  //     const result = await this.postsRepository.createPosts(postsnew);
 
-      return result;
-    }
-  }
+  //     return result;
+  //   }
+  // }
 
   async getBloggersPost(
     bloggerId: string,

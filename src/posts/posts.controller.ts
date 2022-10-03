@@ -33,6 +33,11 @@ import { PostsService } from './posts.service';
 import { Request } from 'express';
 import { UsersDBTypeWithId } from '../users/users.type';
 import { UserId } from '../guards/userId';
+import { CreatePostsUseCase } from './use-case/createPostsUseCase';
+import { DeletePostsUseCase } from './use-case/deletePostsUseCase';
+import { UpdatePostsUseCase } from './use-case/updatePostsUseCase';
+import { CreateCommentsUseCase } from './use-case/createCommentsUseCase';
+import { UpdateLikePostUseCase } from './use-case/updateLikePostUseCase';
 let status = ['None', 'Like', 'Dislike'];
 type RequestWithUser = Request & { user: UsersDBTypeWithId };
 class likeStatus {
@@ -79,6 +84,11 @@ class CommentsUpdate {
 export class PostsController {
   constructor(
     protected postsService: PostsService, //protected commentsServise: CommentsService,
+    private createPostsUseCase: CreatePostsUseCase,
+    private deletePostsUseCase: DeletePostsUseCase,
+    private updatePostsUseCase: UpdatePostsUseCase,
+    private createCommentsUseCase: CreateCommentsUseCase,
+    private updateLikePostUseCase: UpdateLikePostUseCase,
   ) {}
   @UseGuards(UserId)
   @Get()
@@ -137,7 +147,7 @@ export class PostsController {
   @Post()
   @HttpCode(201)
   async createPosts(@Body() body: UpdatePosts) {
-    const postnew = await this.postsService.createPosts(
+    const postnew = await this.createPostsUseCase.execute(
       body.title,
       body.shortDescription,
       body.content,
@@ -196,7 +206,7 @@ export class PostsController {
   @Put(':id')
   @HttpCode(204)
   async updatePostsId(@Body() body: UpdatePosts, @Param('id') id: string) {
-    const postsnew = await this.postsService.updatePostsId(
+    const postsnew = await this.updatePostsUseCase.execute(
       id,
       body.title,
       body.shortDescription,
@@ -217,7 +227,7 @@ export class PostsController {
   @Delete(':id')
   @HttpCode(204)
   async deletePosts(@Param('id') id: string) {
-    const isdelete = await this.postsService.deletePosts(id);
+    const isdelete = await this.deletePostsUseCase.execute(id);
     if (isdelete) {
       return;
     } else {
@@ -241,7 +251,7 @@ export class PostsController {
     if (!findPost) {
       throw new NotFoundException();
     } else {
-      const newComment = await this.postsService.createComments(
+      const newComment = await this.createCommentsUseCase.execute(
         userId,
         userLogin,
         postId,
@@ -313,7 +323,7 @@ export class PostsController {
     if (!postById) {
       throw new NotFoundException();
     }
-    const result = await this.postsService.updateLikePost(
+    const result = await this.updateLikePostUseCase.execute(
       postId,
       userId,
       body.likeStatus,

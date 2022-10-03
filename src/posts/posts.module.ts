@@ -33,7 +33,16 @@ import { PostsController } from './posts.controller';
 import { PostsRepository as PostsRepositoryMongo } from './posts.repositorySQL';
 import { PostsRepository as PostsRepositorySQL } from './posts.repositorySQL';
 import { PostsService } from './posts.service';
-
+import { CreatePostsUseCase } from './use-case/createPostsUseCase';
+import { DeletePostsUseCase } from './use-case/deletePostsUseCase';
+import { UpdatePostsUseCase } from './use-case/updatePostsUseCase';
+import { CreateCommentsUseCase } from './use-case/createCommentsUseCase';
+const useCase = [
+  CreatePostsUseCase,
+  DeletePostsUseCase,
+  UpdatePostsUseCase,
+  CreateCommentsUseCase,
+];
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -73,6 +82,7 @@ import { PostsService } from './posts.service';
     // UsersRepositorySQL,
     JwtService,
     UsersService,
+    ...useCase,
   ],
 })
 export class PostsModule {}

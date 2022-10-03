@@ -20,6 +20,10 @@ import { UserId } from '../guards/userId';
 import { postsType } from '../posts/posts.type';
 import { UsersDBTypeWithId } from '../users/users.type';
 import { BloggersService } from './bloggers.service';
+import { CreateBloggersPostUseCase } from './use-cases/createBloggerPostUseCase';
+import { CreateBloggersUseCase } from './use-cases/createBloggerUseCase';
+import { DeleteBloggersByIdUseCase } from './use-cases/deleteBloggersByIdUseCase';
+import { UpdateBloggersUseCase } from './use-cases/updateBloggerUseCase';
 type RequestWithUser = Request & { user: UsersDBTypeWithId };
 class bloggerPosts {
   @IsNotEmpty()
@@ -47,7 +51,13 @@ class UpdateBloggers {
 
 @Controller('bloggers')
 export class BloggersController {
-  constructor(protected bloggersService: BloggersService) {}
+  constructor(
+    protected bloggersService: BloggersService,
+    private createBloggersUseCase: CreateBloggersUseCase,
+    private updateBloggersUseCase: UpdateBloggersUseCase,
+    private createBloggersPostUseCase: CreateBloggersPostUseCase,
+    private deleteBloggersByIdUseCase: DeleteBloggersByIdUseCase,
+  ) {}
 
   @Get()
   async getBloggers(
@@ -75,7 +85,7 @@ export class BloggersController {
   @UseGuards(AuthBasic)
   @Post()
   async createBloggers(@Body() body: UpdateBloggers) {
-    const bloggersnew = await this.bloggersService.createBloggers(
+    const bloggersnew = await this.createBloggersUseCase.execute(
       body.name,
       body.youtubeUrl,
     );
@@ -98,7 +108,7 @@ export class BloggersController {
   @Delete(':bloggersId')
   @HttpCode(204)
   async deleteBloggersById(@Param() params: { bloggersId: string }) {
-    const bloggerdel = await this.bloggersService.deleteBloggersById(
+    const bloggerdel = await this.deleteBloggersByIdUseCase.execute(
       params.bloggersId,
     );
     if (bloggerdel === false) {
@@ -114,7 +124,7 @@ export class BloggersController {
     @Param() params: { id: string },
     @Body() body: UpdateBloggers,
   ) {
-    const bloggersnew = await this.bloggersService.updateBloggers(
+    const bloggersnew = await this.updateBloggersUseCase.execute(
       params.id,
       body.name,
       body.youtubeUrl,
@@ -133,7 +143,7 @@ export class BloggersController {
     @Param('bloggerId') bloggerId: string,
     @Body() body: bloggerPosts,
   ) {
-    const bloggersnew = await this.bloggersService.createBloggersPost(
+    const bloggersnew = await this.createBloggersPostUseCase.execute(
       bloggerId,
       body.title,
       body.shortDescription,
