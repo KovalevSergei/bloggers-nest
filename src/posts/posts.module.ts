@@ -37,11 +37,13 @@ import { CreatePostsUseCase } from './use-case/createPostsUseCase';
 import { DeletePostsUseCase } from './use-case/deletePostsUseCase';
 import { UpdatePostsUseCase } from './use-case/updatePostsUseCase';
 import { CreateCommentsUseCase } from './use-case/createCommentsUseCase';
+import { UpdateLikePostUseCase } from './use-case/updateLikePostUseCase';
 const useCase = [
   CreatePostsUseCase,
   DeletePostsUseCase,
   UpdatePostsUseCase,
   CreateCommentsUseCase,
+  UpdateLikePostUseCase,
 ];
 @Module({
   imports: [

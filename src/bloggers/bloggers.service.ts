@@ -10,7 +10,7 @@ export class BloggersService {
     protected bloggersRepository: BloggersRepository,
     protected postsRepository: PostsRepository, //protected postsService: PostsService,
   ) {}
-  async getBloggers(
+  /*  async getBloggers(
     pageSize: number,
     pageNumber: number,
     SearhName: string,
@@ -34,8 +34,8 @@ export class BloggersService {
       totalCount,
       items2,
     );
-    return result;
-  }
+    return result; */
+  // }
   // async createBloggers(
   //   name: string,
   //   youtubeUrl: string,
@@ -50,7 +50,7 @@ export class BloggersService {
 
   //   return result;
   // }
-  async getBloggersById(id: string): Promise<bloggersType | null> {
+  /*  async getBloggersById(id: string): Promise<bloggersType | null> {
     const bloggers = await this.bloggersRepository.getBloggersById(id);
     if (!bloggers) {
       return null;
@@ -61,8 +61,8 @@ export class BloggersService {
         youtubeUrl: bloggers.youtubeUrl,
       };
       return bloggers2;
-    }
-  }
+    } */
+  //}
   // async deleteBloggersById(id: string): Promise<boolean> {
   //   return this.bloggersRepository.deleteBloggersById(id);
   // }
@@ -100,72 +100,72 @@ export class BloggersService {
   //   }
   // }
 
-  async getBloggersPost(
-    bloggerId: string,
-    pageSize: number,
-    pageNumber: number,
-    userId: string,
-  ): Promise<postsDBType | boolean | postsType[]> {
-    const { items, totalCount } = await this.postsRepository.getBloggersPost(
-      bloggerId,
-      pageSize,
-      pageNumber,
-    );
+  //   async getBloggersPost(
+  //     bloggerId: string,
+  //     pageSize: number,
+  //     pageNumber: number,
+  //     userId: string,
+  //   ): Promise<postsDBType | boolean | postsType[]> {
+  //     const { items, totalCount } = await this.postsRepository.getBloggersPost(
+  //       bloggerId,
+  //       pageSize,
+  //       pageNumber,
+  //     );
 
-    /*    const postIds = items.map(p => p.id)
-const likes= await this.postsRepository.getLikesBloggersPost(postIds)
-const dislikes=await this.postsRepository.getDislikeBloggersPost(postIds)
-    items.forEach(p => {
-      const postLikes = likes.filter(l => l.postId === p.id)
+  //     /*    const postIds = items.map(p => p.id)
+  // const likes= await this.postsRepository.getLikesBloggersPost(postIds)
+  // const dislikes=await this.postsRepository.getDislikeBloggersPost(postIds)
+  //     items.forEach(p => {
+  //       const postLikes = likes.filter(l => l.postId === p.id)
 
-    }) */
+  //     }) */
 
-    const items2 = [];
+  //     const items2 = [];
 
-    if (totalCount === 0) {
-      return false;
-    } else {
-      for (let i = 0; i < items.length; i++) {
-        const postItt = items[i];
-        const postId = postItt.id;
-        const likesInformation = await this.postsRepository.getLikeStatus(
-          postId,
-          userId,
-        );
-        const newestLikes = await this.postsRepository.getNewestLikes(postId);
-        const newestLikesMap = newestLikes.map(
-          (v: { addedAt: any; userId: any; login: any }) => ({
-            addedAt: v.addedAt,
-            userId: v.userId,
-            login: v.login,
-          }),
-        );
-        const a = {
-          id: items[i].id,
-          title: items[i].title,
-          shortDescription: items[i].shortDescription,
-          content: items[i].content,
-          bloggerId: items[i].bloggerId,
-          bloggerName: items[i].bloggerName,
-          addedAt: items[i].addedAt,
-          extendedLikesInfo: {
-            likesCount: likesInformation.likesCount,
-            dislikesCount: likesInformation.dislikesCount,
-            myStatus: likesInformation.myStatus,
-            newestLikes: newestLikesMap,
-          },
-        };
-        items2.push(a);
-      }
-      let pagesCount = Number(Math.ceil(totalCount / pageSize));
-      const result: postsDBType = {
-        pagesCount: pagesCount,
-        page: pageNumber,
-        pageSize: pageSize,
-        totalCount: totalCount,
-        items: items2,
-      };
-      return result;
-    }
-  }
+  //     if (totalCount === 0) {
+  //       return false;
+  //     } else {
+  //       for (let i = 0; i < items.length; i++) {
+  //         const postItt = items[i];
+  //         const postId = postItt.id;
+  //         const likesInformation = await this.postsRepository.getLikeStatus(
+  //           postId,
+  //           userId,
+  //         );
+  //         const newestLikes = await this.postsRepository.getNewestLikes(postId);
+  //         const newestLikesMap = newestLikes.map(
+  //           (v: { addedAt: any; userId: any; login: any }) => ({
+  //             addedAt: v.addedAt,
+  //             userId: v.userId,
+  //             login: v.login,
+  //           }),
+  //         );
+  //         const a = {
+  //           id: items[i].id,
+  //           title: items[i].title,
+  //           shortDescription: items[i].shortDescription,
+  //           content: items[i].content,
+  //           bloggerId: items[i].bloggerId,
+  //           bloggerName: items[i].bloggerName,
+  //           addedAt: items[i].addedAt,
+  //           extendedLikesInfo: {
+  //             likesCount: likesInformation.likesCount,
+  //             dislikesCount: likesInformation.dislikesCount,
+  //             myStatus: likesInformation.myStatus,
+  //             newestLikes: newestLikesMap,
+  //           },
+  //         };
+  //         items2.push(a);
+  //       }
+  //       let pagesCount = Number(Math.ceil(totalCount / pageSize));
+  //       const result: postsDBType = {
+  //         pagesCount: pagesCount,
+  //         page: pageNumber,
+  //         pageSize: pageSize,
+  //         totalCount: totalCount,
+  //         items: items2,
+  //       };
+  //       return result;
+  //     }
+  //   }
 }

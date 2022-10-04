@@ -30,14 +30,21 @@ import { UpdateBloggersUseCase } from './use-cases/updateBloggerUseCase';
 import { CreateBloggersPostUseCase } from './use-cases/createBloggerPostUseCase';
 import { DeleteBloggersByIdUseCase } from './use-cases/deleteBloggersByIdUseCase';
 import { BloggersRepositoryQuery } from './bloggers.repositoryQueryMongo';
+import { CommandBus, CqrsModule } from '@nestjs/cqrs';
+import { GetBloggersPostUseCase } from './use-cases/getBloggersPostsUseCase';
+
 const useCases = [
   CreateBloggersUseCase,
   UpdateBloggersUseCase,
   CreateBloggersPostUseCase,
   DeleteBloggersByIdUseCase,
+  CreateBloggersPostUseCase,
+  GetBloggersPostUseCase,
 ];
+
 @Module({
   imports: [
+    CqrsModule,
     MongooseModule.forFeature([
       { name: BLOGGERS_COLLECTION, schema: bloggersSchema },
     ]),

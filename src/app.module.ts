@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { CqrsModule } from '@nestjs/cqrs';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -24,6 +25,7 @@ import { UsersModule } from './users/users-module';
 
 @Module({
   imports: [
+    //CqrsModule,
     /*  TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',

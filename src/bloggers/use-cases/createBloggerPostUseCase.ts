@@ -1,32 +1,47 @@
 import { Injectable } from '@nestjs/common';
 import { PostsRepository } from '../../posts/posts.repositorySQL';
 import { BloggersRepository } from '../bloggersSQL.repository';
-import { postsType } from 'src/posts/posts.type';
+import { postsType } from '../../posts/posts.type';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-@Injectable()
-export class CreateBloggersPostUseCase {
+export class CreateBloggersPostCommand {
+  constructor(
+    public bloggerId: string,
+    public title: string,
+    public shortDescription: string,
+    public content: string,
+  ) {}
+}
+
+@CommandHandler(CreateBloggersPostCommand)
+export class CreateBloggersPostUseCase
+  implements ICommandHandler<CreateBloggersPostCommand>
+{
   constructor(
     protected bloggersRepository: BloggersRepository,
     protected postsRepository: PostsRepository, //protected postsService: PostsService,
   ) {}
 
   async execute(
-    bloggerId: string,
-    title: string,
-    shortDescription: string,
-    content: string,
+    command: CreateBloggersPostCommand,
+    // bloggerId: string,
+    // title: string,
+    // shortDescription: string,
+    // content: string,
   ): Promise<postsType | boolean> {
-    const findName = await this.bloggersRepository.getBloggersById(bloggerId);
+    const findName = await this.bloggersRepository.getBloggersById(
+      command.bloggerId,
+    );
 
     if (!findName) {
       return false;
     } else {
       const postsnew = {
         id: Number(new Date()).toString(),
-        title: title,
-        shortDescription: shortDescription,
-        content: content,
-        bloggerId: bloggerId,
+        title: command.title,
+        shortDescription: command.shortDescription,
+        content: command.content,
+        bloggerId: command.bloggerId,
         bloggerName: findName.name,
         addedAt: new Date(),
       };

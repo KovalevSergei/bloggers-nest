@@ -13,17 +13,20 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Transform, TransformFnParams } from 'class-transformer';
 import { IsNotEmpty, IsString, IsUrl, Length } from 'class-validator';
 import { AuthBasic } from '../guards/authBasic.guards';
 import { UserId } from '../guards/userId';
 import { postsType } from '../posts/posts.type';
 import { UsersDBTypeWithId } from '../users/users.type';
+import { BloggersRepositoryQuery } from './bloggers.repositoryQueryMongo';
 import { BloggersService } from './bloggers.service';
-import { CreateBloggersPostUseCase } from './use-cases/createBloggerPostUseCase';
-import { CreateBloggersUseCase } from './use-cases/createBloggerUseCase';
-import { DeleteBloggersByIdUseCase } from './use-cases/deleteBloggersByIdUseCase';
-import { UpdateBloggersUseCase } from './use-cases/updateBloggerUseCase';
+import { CreateBloggersPostCommand } from './use-cases/createBloggerPostUseCase';
+import { CreateBloggerCommand } from './use-cases/createBloggerUseCase';
+import { DeleteBloggerCommand } from './use-cases/deleteBloggersByIdUseCase';
+import { GetBloggerPostQuery } from './use-cases/getBloggersPostsUseCase';
+import { UpdateBloggersCommand } from './use-cases/updateBloggerUseCase';
 type RequestWithUser = Request & { user: UsersDBTypeWithId };
 class bloggerPosts {
   @IsNotEmpty()
@@ -53,10 +56,9 @@ class UpdateBloggers {
 export class BloggersController {
   constructor(
     protected bloggersService: BloggersService,
-    private createBloggersUseCase: CreateBloggersUseCase,
-    private updateBloggersUseCase: UpdateBloggersUseCase,
-    private createBloggersPostUseCase: CreateBloggersPostUseCase,
-    private deleteBloggersByIdUseCase: DeleteBloggersByIdUseCase,
+    protected bloggersRepositoryQuery: BloggersRepositoryQuery,
+    private commandBus: CommandBus,
+    private queryBus: QueryBus,
   ) {}
 
   @Get()
@@ -71,7 +73,7 @@ export class BloggersController {
 
     const SearhName = SearchNameTerm;
     if (typeof SearhName === 'string' || !SearhName) {
-      const getBloggers = await this.bloggersService.getBloggers(
+      const getBloggers = await this.bloggersRepositoryQuery.getBloggers(
         pageSize || 10,
         pageNumber || 1,
         SearhName,
@@ -85,15 +87,16 @@ export class BloggersController {
   @UseGuards(AuthBasic)
   @Post()
   async createBloggers(@Body() body: UpdateBloggers) {
-    const bloggersnew = await this.createBloggersUseCase.execute(
-      body.name,
-      body.youtubeUrl,
+    const bloggersnew = await this.commandBus.execute(
+      new CreateBloggerCommand(body.name, body.youtubeUrl),
     );
     return bloggersnew;
   }
   @Get(':bloggersId')
   async getBloggersById(@Param() params: { bloggersId: string }) {
-    const blog = await this.bloggersService.getBloggersById(params.bloggersId);
+    const blog = await this.bloggersRepositoryQuery.getBloggersById(
+      params.bloggersId,
+    );
     if (!blog) {
       throw new NotFoundException();
     }
@@ -108,8 +111,8 @@ export class BloggersController {
   @Delete(':bloggersId')
   @HttpCode(204)
   async deleteBloggersById(@Param() params: { bloggersId: string }) {
-    const bloggerdel = await this.deleteBloggersByIdUseCase.execute(
-      params.bloggersId,
+    const bloggerdel = await this.commandBus.execute(
+      new DeleteBloggerCommand(params.bloggersId),
     );
     if (bloggerdel === false) {
       throw new NotFoundException();
@@ -124,10 +127,8 @@ export class BloggersController {
     @Param() params: { id: string },
     @Body() body: UpdateBloggers,
   ) {
-    const bloggersnew = await this.updateBloggersUseCase.execute(
-      params.id,
-      body.name,
-      body.youtubeUrl,
+    const bloggersnew = await this.commandBus.execute(
+      new UpdateBloggersCommand(params.id, body.name, body.youtubeUrl),
     );
 
     if (bloggersnew) {
@@ -143,11 +144,13 @@ export class BloggersController {
     @Param('bloggerId') bloggerId: string,
     @Body() body: bloggerPosts,
   ) {
-    const bloggersnew = await this.createBloggersPostUseCase.execute(
-      bloggerId,
-      body.title,
-      body.shortDescription,
-      body.content,
+    const bloggersnew = await this.commandBus.execute(
+      new CreateBloggersPostCommand(
+        bloggerId,
+        body.title,
+        body.shortDescription,
+        body.content,
+      ),
     );
 
     if (bloggersnew === false) {
@@ -182,11 +185,8 @@ export class BloggersController {
   ) {
     const userId = req.user?.id;
 
-    const getPostBlogger = await this.bloggersService.getBloggersPost(
-      id,
-      PageSize || 10,
-      PageNumber || 1,
-      userId,
+    const getPostBlogger = await this.queryBus.execute(
+      new GetBloggerPostQuery(id, PageSize || 10, PageNumber || 1, userId),
     );
     if (getPostBlogger === false) {
       throw new NotFoundException('If specific blogger is not exists');

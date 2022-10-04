@@ -2,19 +2,21 @@ import { Injectable } from '@nestjs/common';
 import { PostsRepository } from '../../posts/posts.repositorySQL';
 import { BloggersRepository } from '../bloggersSQL.repository';
 import { bloggersType } from '../bloggers.type';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+export class CreateBloggerCommand {
+  constructor(public name: string, public youtubeUrl: string) {}
+}
+@CommandHandler(CreateBloggerCommand)
+export class CreateBloggersUseCase
+  implements ICommandHandler<CreateBloggerCommand>
+{
+  constructor(protected bloggersRepository: BloggersRepository) {}
 
-@Injectable()
-export class CreateBloggersUseCase {
-  constructor(
-    protected bloggersRepository: BloggersRepository,
-    protected postsRepository: PostsRepository, //protected postsService: PostsService,
-  ) {}
-
-  async execute(name: string, youtubeUrl: string): Promise<bloggersType> {
+  async execute(command: CreateBloggerCommand): Promise<bloggersType> {
     const bloggersnew = {
       id: Number(new Date()).toString(),
-      name: name,
-      youtubeUrl: youtubeUrl,
+      name: command.name,
+      youtubeUrl: command.youtubeUrl,
     };
 
     const result = this.bloggersRepository.createBloggers(bloggersnew);

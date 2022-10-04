@@ -9,37 +9,37 @@ import * as bcrypt from 'bcrypt';
 @Injectable()
 export class UsersService {
   constructor(protected usersRepository: UsersRepository) {}
-  async createUser(
-    login: string,
-    email: string,
-    password: string,
-  ): Promise<UsersDBType> {
-    const passwordSalt = await bcrypt.genSalt(10);
-    const passwordHash = await this._generateHash(password, passwordSalt);
+  // async createUser(
+  //   login: string,
+  //   email: string,
+  //   password: string,
+  // ): Promise<UsersDBType> {
+  //   const passwordSalt = await bcrypt.genSalt(10);
+  //   const passwordHash = await this._generateHash(password, passwordSalt);
 
-    const newUser: UsersDBType = {
-      id: Number(new Date()).toString(),
-      accountData: {
-        login: login,
-        email: email,
-        passwordHash,
-        passwordSalt,
-        createdAt: new Date(),
-      },
-      emailConfirmation: {
-        confirmationCode: uuidv4(),
-        expirationDate: add(new Date(), {
-          hours: 1,
-          minutes: 3,
-        }),
-        isConfirmed: false,
-      },
-    };
+  //   const newUser: UsersDBType = {
+  //     id: Number(new Date()).toString(),
+  //     accountData: {
+  //       login: login,
+  //       email: email,
+  //       passwordHash,
+  //       passwordSalt,
+  //       createdAt: new Date(),
+  //     },
+  //     emailConfirmation: {
+  //       confirmationCode: uuidv4(),
+  //       expirationDate: add(new Date(), {
+  //         hours: 1,
+  //         minutes: 3,
+  //       }),
+  //       isConfirmed: false,
+  //     },
+  //   };
 
-    const User = await this.usersRepository.createUser(newUser);
+  //   const User = await this.usersRepository.createUser(newUser);
 
-    return User;
-  }
+  //   return User;
+  // }
   async _generateHash(password: string, salt: string) {
     const hash = await bcrypt.hash(password, salt);
     return hash;
@@ -71,9 +71,9 @@ export class UsersService {
 
     return result;
   }
-  async deleteUserId(id: string): Promise<boolean> {
-    return this.usersRepository.deleteUsersId(id);
-  }
+  // async deleteUserId(id: string): Promise<boolean> {
+  //   return this.usersRepository.deleteUsersId(id);
+  // }
   async checkCredentials(
     users: UsersDBTypeWithId,
     login: string,

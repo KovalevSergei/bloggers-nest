@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { CreateUserUseCase } from '../users/use-case/createUserUseCase';
+
 import { JwtService } from '../application/jwt-service';
 import {
   ipSchema,
@@ -15,6 +17,7 @@ import { UsersService } from '../users/users-service';
 import { AuthController } from './auth-controller';
 import { AuthService } from './auth-service';
 
+const useCase = [CreateUserUseCase];
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -32,6 +35,8 @@ import { AuthService } from './auth-service';
     UsersRepository,
     UsersService,
     EmailAdapter,
+    ...useCase,
+    //CommandBus,
   ],
   //exports: [BloggersRepository],
 })

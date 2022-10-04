@@ -17,6 +17,8 @@ import { IsEmail, isEmail, IsNotEmpty, Length } from 'class-validator';
 import { AuthBasic } from '../guards/authBasic.guards';
 import { LoginFindDoublicate } from '../guards/loginFindDoublicate';
 import { MailFindDoublicate } from '../guards/mailFindDoublicate';
+import { CreateUserUseCase } from './use-case/createUserUseCase';
+import { DeleteUserUseCase } from './use-case/deleteUserUseCase';
 import { UsersService } from './users-service';
 class CreateUser {
   @IsNotEmpty()
@@ -33,7 +35,11 @@ class CreateUser {
 
 @Controller('users')
 export class UsersController {
-  constructor(protected usersService: UsersService) {}
+  constructor(
+    protected usersService: UsersService,
+    private createUserUseCase: CreateUserUseCase,
+    private deleteUserUseCase: DeleteUserUseCase,
+  ) {}
   @UseGuards(AuthBasic)
   @UseGuards(MailFindDoublicate)
   @UseGuards(LoginFindDoublicate)
@@ -44,7 +50,11 @@ export class UsersController {
     const password: string = body.password;
     const email: string = body.email;
 
-    const newUser = await this.usersService.createUser(login, email, password);
+    const newUser = await this.createUserUseCase.execute(
+      login,
+      email,
+      password,
+    );
 
     const user = { id: newUser.id, login: newUser.accountData.login };
     return user;
@@ -64,7 +74,7 @@ export class UsersController {
   @Delete(':id')
   @HttpCode(204)
   async deleteUserId(@Param('id') id: string) {
-    const userDel = await this.usersService.deleteUserId(id);
+    const userDel = await this.deleteUserUseCase.execute(id);
     if (userDel) {
       return;
     } else {

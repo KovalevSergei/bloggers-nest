@@ -8,12 +8,14 @@ import {
   USERS_COLLECTION,
 } from '../db';
 import { Token, Users } from '../db.sql';
+import { CreateUserUseCase } from './use-case/createUserUseCase';
+import { DeleteUserUseCase } from './use-case/deleteUserUseCase';
 //import { Token, Users } from '../db.sql';
 import { UsersController } from './users-controller';
 import { UsersRepository as UsersRepositoryMongo } from './users-repositorySQL';
 //import { UsersRepository as UsersRepositorySQL } from './users-repositorySQL';
 import { UsersService } from './users-service';
-
+const useCase = [CreateUserUseCase, DeleteUserUseCase];
 @Module({
   imports: [
     //TypeOrmModule.forFeature([Users]),
@@ -26,7 +28,7 @@ import { UsersService } from './users-service';
     ]),
   ],
   controllers: [UsersController],
-  providers: [UsersService, UsersRepositoryMongo],
+  providers: [UsersService, UsersRepositoryMongo, ...useCase],
   exports: [],
 })
 export class UsersModule {}

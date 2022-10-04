@@ -5,6 +5,7 @@ import { UsersRepository } from '../users/users-repositorySQL';
 import { UsersService } from '../users/users-service';
 import { UsersDBType } from '../users/users.type';
 import { v4 as uuidv4 } from 'uuid';
+import { CreateUserUseCase } from 'src/users/use-case/createUserUseCase';
 
 @Injectable()
 export class AuthService {
@@ -14,12 +15,12 @@ export class AuthService {
     protected jwtService: JwtService,
     protected emailAdapter: EmailAdapter,
   ) {}
-  async createUser(
-    login: string,
-    email: string,
-    password: string,
-  ): Promise<UsersDBType> {
-    /*    const passwordSalt = await bcrypt.genSalt(10)
+  // async createUser(
+  //   login: string,
+  //   email: string,
+  //   password: string,
+  // ): Promise<UsersDBType> {
+  /*    const passwordSalt = await bcrypt.genSalt(10)
         const passwordHash = await UsersServis._generateHash(password, passwordSalt);
         const user: UsersDBType = {
           id: new Date().toString(),
@@ -39,21 +40,21 @@ export class AuthService {
             isConfirmed: false,
           },
         }; */
-    const createResult = await this.usersService.createUser(
-      login,
-      email,
-      password,
-    );
+  //   const createResult = await this.usersService.createUser(
+  //     login,
+  //     email,
+  //     password,
+  //   );
 
-    if (createResult) {
-      this.emailAdapter.sendEmail(
-        email,
-        'Registration',
-        createResult.emailConfirmation.confirmationCode,
-      );
-    }
-    return createResult;
-  }
+  //   if (createResult) {                          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!письмо отправить
+  //     this.emailAdapter.sendEmail(
+  //       email,
+  //       'Registration',
+  //       createResult.emailConfirmation.confirmationCode,
+  //     );
+  //   }
+  //   return createResult;
+  // }
   async confirmEmail(email: string): Promise<boolean> {
     let user = await this.usersRepository.findByEmail(email);
 

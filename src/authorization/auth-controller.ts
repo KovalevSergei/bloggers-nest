@@ -26,6 +26,7 @@ import { UsersDBType } from '../users/users.type';
 import { truncate } from 'fs';
 import { MailFindDoublicate } from '../guards/mailFindDoublicate';
 import { LoginFindDoublicate } from '../guards/loginFindDoublicate';
+import { CreateUserUseCase } from '../users/use-case/createUserUseCase';
 class AuthBody {
   @IsNotEmpty()
   @Transform(({ value }: TransformFnParams) => value?.trim())
@@ -63,6 +64,7 @@ export class AuthController {
     protected authService: AuthService,
     protected usersServis: UsersService,
     protected jwtService: JwtService,
+    private createUserUseCase: CreateUserUseCase,
   ) {}
   @UseGuards(Mistake429)
   @Post('login')
@@ -103,7 +105,7 @@ export class AuthController {
   @Post('registration')
   @HttpCode(204)
   async createUser(@Body() body: CreateUser) {
-    const user = await this.authService.createUser(
+    const user = await this.createUserUseCase.execute(
       body.login,
       body.email,
       body.password,

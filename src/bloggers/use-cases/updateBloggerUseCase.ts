@@ -1,15 +1,24 @@
 import { Injectable } from '@nestjs/common';
+import { CommandHandler, ICommand, ICommandHandler } from '@nestjs/cqrs';
 import { BloggersRepository } from '../bloggersSQL.repository';
-
-@Injectable()
-export class UpdateBloggersUseCase {
+export class UpdateBloggersCommand {
+  constructor(
+    public id: string,
+    public name: string,
+    public youtubeUrl: string,
+  ) {}
+}
+@CommandHandler(UpdateBloggersCommand)
+export class UpdateBloggersUseCase
+  implements ICommandHandler<UpdateBloggersCommand>
+{
   constructor(protected bloggersRepository: BloggersRepository) {}
 
-  async execute(
-    id: string,
-    name: string,
-    youtubeUrl: string,
-  ): Promise<boolean> {
-    return await this.bloggersRepository.updateBloggers(id, name, youtubeUrl);
+  async execute(command: UpdateBloggersCommand): Promise<boolean> {
+    return await this.bloggersRepository.updateBloggers(
+      command.id,
+      command.name,
+      command.youtubeUrl,
+    );
   }
 }
