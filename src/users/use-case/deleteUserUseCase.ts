@@ -5,11 +5,18 @@ import { UsersDBType, UsersDBTypeWithId, usersGetDBType } from '../users.type';
 import { v4 as uuidv4 } from 'uuid';
 import { compareAsc, format, add } from 'date-fns';
 import * as bcrypt from 'bcrypt';
-
-@Injectable()
-export class DeleteUserUseCase {
+import {
+  CommandHandler,
+  ICommandHandler,
+  ICommandPublisher,
+} from '@nestjs/cqrs';
+export class DeleteUserCommand {
+  constructor(public id: string) {}
+}
+@CommandHandler(DeleteUserCommand)
+export class DeleteUserUseCase implements ICommandHandler<DeleteUserCommand> {
   constructor(protected usersRepository: UsersRepository) {}
-  async execute(id: string): Promise<boolean> {
-    return this.usersRepository.deleteUsersId(id);
+  async execute(command: DeleteUserCommand): Promise<boolean> {
+    return this.usersRepository.deleteUsersId(command.id);
   }
 }

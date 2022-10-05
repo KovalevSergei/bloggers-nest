@@ -17,30 +17,30 @@ export class BloggersRepository {
     private bloggersModel: Model<bloggersType>,
   ) {}
 
-  async getBloggers(
-    pageSize: number,
-    pageNumber: number,
-    SearhName: string,
-  ): Promise<bloggersReturn> {
-    const filterQuery: FilterQuery<bloggersType> = {};
+  // async getBloggers(
+  //   pageSize: number,
+  //   pageNumber: number,
+  //   SearhName: string,
+  // ): Promise<bloggersReturn> {
+  //   const filterQuery: FilterQuery<bloggersType> = {};
 
-    if (SearhName) {
-      filterQuery.name = { $regex: SearhName };
-    }
+  //   if (SearhName) {
+  //     filterQuery.name = { $regex: SearhName };
+  //   }
 
-    const totalCount = await this.bloggersModel.count(filterQuery);
+  //   const totalCount = await this.bloggersModel.count(filterQuery);
 
-    const items = await this.bloggersModel
-      .find(filterQuery, { projection: { _id: 0 } })
-      .limit(pageSize)
-      .skip((pageNumber - 1) * pageSize)
-      .lean();
+  //   const items = await this.bloggersModel
+  //     .find(filterQuery, { projection: { _id: 0 } })
+  //     .limit(pageSize)
+  //     .skip((pageNumber - 1) * pageSize)
+  //     .lean();
 
-    return {
-      totalCount: totalCount,
-      items: items,
-    };
-  }
+  //   return {
+  //     totalCount: totalCount,
+  //     items: items,
+  //   };
+  // }
   async createBloggers(bloggersnew: bloggersType): Promise<bloggersType> {
     const bloggersInstance = new this.bloggersModel();
     bloggersInstance.id = bloggersnew.id;
@@ -56,9 +56,9 @@ export class BloggersRepository {
 
     return bloggersnew;
   }
-  async getBloggersById(id: string): Promise<bloggersType | null> {
-    return this.bloggersModel.findOne({ id: id }, { projection: { _id: 0 } });
-  }
+  // async getBloggersById(id: string): Promise<bloggersType | null> {
+  //   return this.bloggersModel.findOne({ id: id }, { projection: { _id: 0 } });
+  // }
   async deleteBloggersById(id: string): Promise<boolean> {
     //const result = await bloggersModel.deleteOne({ id: id });
     const bloggersInstance = await this.bloggersModel.findOne({ id: id });

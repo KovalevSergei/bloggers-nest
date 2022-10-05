@@ -97,22 +97,22 @@ export class PostsService {
   //     return false;
   //   }
   // }
-  async getpostsId(id: string): Promise<postsType | null> {
-    const v = await this.postsRepository.getpostsId(id);
-    if (!v) {
-      return null;
-    }
-    const result2 = {
-      id: v.id,
-      title: v.title,
-      shortDescription: v.shortDescription,
-      content: v.content,
-      bloggerId: v.bloggerId,
-      bloggerName: v.bloggerName,
-      addedAt: v.addedAt,
-    };
-    return result2;
-  }
+  // async getpostsId(id: string): Promise<postsType | null> {
+  //   const v = await this.postsRepository.getpostsId(id);
+  //   if (!v) {
+  //     return null;
+  //   }
+  //   const result2 = {
+  //     id: v.id,
+  //     title: v.title,
+  //     shortDescription: v.shortDescription,
+  //     content: v.content,
+  //     bloggerId: v.bloggerId,
+  //     bloggerName: v.bloggerName,
+  //     addedAt: v.addedAt,
+  //   };
+  //   return result2;
+  // }
   // async updatePostsId(
   //   id: string,
   //   title: string,
@@ -214,28 +214,28 @@ export class PostsService {
   //   }
   //   return true;
   // }
-  async getLike(
-    postId: string,
-    userId: string,
-  ): Promise<{ likesCount: number; dislikesCount: number; myStatus: string }> {
-    const result = await this.postsRepository.getLikeStatus(postId, userId);
-    return result;
-  }
-  async getNewestLikes(postId: string): Promise<likePosts[]> {
-    const result = await this.postsRepository.getNewestLikes(postId);
-    return result;
-  }
-  async getLike2(
-    commentsId: string,
-    userId: string,
-  ): Promise<{ likesCount: number; dislikesCount: number; myStatus: string }> {
-    const result = await this.commentsRepository.getLikeStatus(
-      commentsId,
-      userId,
-    );
-    return result;
-  }
-  async getCommentsPost(
+  // async getLike(
+  //   postId: string,
+  //   userId: string,
+  // ): Promise<{ likesCount: number; dislikesCount: number; myStatus: string }> {
+  //   const result = await this.postsRepository.getLikeStatus(postId, userId);
+  //   return result;
+  // }
+  // async getNewestLikes(postId: string): Promise<likePosts[]> {
+  //   const result = await this.postsRepository.getNewestLikes(postId);
+  //   return result;
+  // }
+  // async getLike2(
+  //   commentsId: string,
+  //   userId: string,
+  // ): Promise<{ likesCount: number; dislikesCount: number; myStatus: string }> {
+  //   const result = await this.commentsRepository.getLikeStatus(
+  //     commentsId,
+  //     userId,
+  //   );
+  //   return result;
+  // }
+  /*   async getCommentsPost(
     pageSize: number,
     pageNumber: number,
     postId: string,
@@ -254,5 +254,5 @@ export class PostsService {
       items: items,
     };
     return result;
-  }
+  } */
 }

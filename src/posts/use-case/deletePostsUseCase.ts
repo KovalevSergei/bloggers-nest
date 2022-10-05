@@ -16,12 +16,15 @@ import {
   postsDBType,
   postsType,
 } from '../posts.type';
-
-@Injectable()
-export class DeletePostsUseCase {
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+export class DeletePostComand {
+  constructor(public id: string) {}
+}
+@CommandHandler(DeletePostComand)
+export class DeletePostsUseCase implements ICommandHandler<DeletePostComand> {
   constructor(protected postsRepository: PostsRepository) {}
   //protected usersRepository: UsersRepository){}
-  async execute(id: string): Promise<boolean> {
-    return this.postsRepository.deletePosts(id);
+  async execute(command: DeletePostComand): Promise<boolean> {
+    return this.postsRepository.deletePosts(command.id);
   }
 }

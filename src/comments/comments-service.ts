@@ -16,28 +16,28 @@ export class CommentsService {
     protected commentsRepository: CommentsRepository,
     protected usersRepository: UsersRepository,
   ) {}
-  async updateContent(
-    content: string,
-    commentId: string,
-    //userId: string
-  ): Promise<boolean | null> {
-    const UpdateComment = await this.commentsRepository.updateComment(
-      content,
-      commentId,
-      //userId
-    );
-    return UpdateComment;
-  }
-  async getComment(id: string): Promise<commentsDBType | null> {
+  // async updateContent(
+  //   content: string,
+  //   commentId: string,
+  //   //userId: string
+  // ): Promise<boolean | null> {
+  //   const UpdateComment = await this.commentsRepository.updateComment(
+  //     content,
+  //     commentId,
+  //     //userId
+  //   );
+  //   return UpdateComment;
+  // }
+  /*   async getComment(id: string): Promise<commentsDBType | null> {
     const comment = await this.commentsRepository.getComment(id);
     return comment;
-  }
-  async deleteComment(id: string): Promise<boolean | null> {
+  } */
+  /*   async deleteComment(id: string): Promise<boolean | null> {
     const isdelete = await this.commentsRepository.deleteComment(id);
     return isdelete;
-  }
+  } */
 
-  async getCommentsPost(
+  /*   async getCommentsPost(
     pageSize: number,
     pageNumber: number,
     postId: string,
@@ -56,58 +56,10 @@ export class CommentsService {
       items: items,
     };
     return result;
-  }
+  } */
+}
 
-  async updateLikeComments(
-    commentsId: string,
-    userId: string,
-    myStatus: string,
-  ): Promise<boolean> {
-    const findLike = await this.commentsRepository.findLikeStatus(
-      commentsId,
-      userId,
-    );
-    const login = await this.usersRepository.getUserById(userId);
-    const login2 = login as UsersDBType;
-    if (!findLike && myStatus != 'None') {
-      const likeCommentForm = new likeComments(
-        commentsId,
-        userId,
-        login2.accountData.login,
-        myStatus,
-        new Date(),
-      );
-      const result = await this.commentsRepository.createLikeStatus(
-        likeCommentForm,
-      );
-      return true;
-    }
-    if (findLike && myStatus === 'None') {
-      await this.commentsRepository.deleteLike(commentsId, userId);
-      return true;
-    }
-
-    if (findLike?.myStatus === myStatus) {
-      return true;
-    } else {
-      await this.commentsRepository.deleteLike(commentsId, userId);
-      const login = await this.usersRepository.getUserById(userId);
-      const login2 = login as UsersDBType;
-      const likeCommentForm = new likeComments(
-        commentsId,
-        userId,
-        login2.accountData.login,
-        myStatus,
-        new Date(),
-      );
-      const result = await this.commentsRepository.createLikeStatus(
-        likeCommentForm,
-      );
-    }
-
-    return true;
-  }
-  async getLike(
+/*  async getLike(
     commentsId: string,
     userId: string,
   ): Promise<{ likesCount: number; dislikesCount: number; myStatus: string }> {
@@ -116,5 +68,4 @@ export class CommentsService {
       userId,
     );
     return result;
-  }
-}
+  } */

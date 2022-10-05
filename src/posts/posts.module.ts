@@ -38,15 +38,24 @@ import { DeletePostsUseCase } from './use-case/deletePostsUseCase';
 import { UpdatePostsUseCase } from './use-case/updatePostsUseCase';
 import { CreateCommentsUseCase } from './use-case/createCommentsUseCase';
 import { UpdateLikePostUseCase } from './use-case/updateLikePostUseCase';
+import { CqrsModule } from '@nestjs/cqrs';
+import { GetPostUseCase } from './use-case/getPostsUseCese';
+import { PostsRepositoryQuery } from './posts.repositoryMongoQuery';
+import { getCommentPostUseCase } from './use-case/getCommentsPostUseCase';
+import { BloggersRepositoryQuery } from '../bloggers/bloggers.repositoryQueryMongo';
+import { CommentsRepositoryQuery } from '../comments/comments-repositoryMongoQuery';
 const useCase = [
   CreatePostsUseCase,
   DeletePostsUseCase,
   UpdatePostsUseCase,
   CreateCommentsUseCase,
   UpdateLikePostUseCase,
+  GetPostUseCase,
+  getCommentPostUseCase,
 ];
 @Module({
   imports: [
+    CqrsModule,
     MongooseModule.forFeature([
       { name: POSTS_COLLECTION, schema: postsSchema },
     ]),
@@ -83,7 +92,10 @@ const useCase = [
     UsersRepositoryMongo,
     // UsersRepositorySQL,
     JwtService,
+    PostsRepositoryQuery,
     UsersService,
+    BloggersRepositoryQuery,
+    CommentsRepositoryQuery,
     ...useCase,
   ],
 })

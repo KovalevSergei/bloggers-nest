@@ -5,7 +5,6 @@ import {
   Delete,
   Get,
   HttpCode,
-  HttpStatus,
   NotFoundException,
   Param,
   Post,
@@ -16,16 +15,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Transform, TransformFnParams } from 'class-transformer';
-import {
-  IsIn,
-  IsNotEmpty,
-  IsString,
-  isString,
-  IsUrl,
-  Length,
-} from 'class-validator';
-import { NOTFOUND } from 'dns';
-import { CommentsService } from '../comments/comments-service';
+import { IsIn, IsNotEmpty, IsString, IsUrl, Length } from 'class-validator';
 import { commentDBTypePagination } from '../comments/comments.type';
 import { Auth } from '../guards/Auth';
 import { AuthBasic } from '../guards/authBasic.guards';
@@ -33,11 +23,16 @@ import { PostsService } from './posts.service';
 import { Request } from 'express';
 import { UsersDBTypeWithId } from '../users/users.type';
 import { UserId } from '../guards/userId';
-import { CreatePostsUseCase } from './use-case/createPostsUseCase';
-import { DeletePostsUseCase } from './use-case/deletePostsUseCase';
-import { UpdatePostsUseCase } from './use-case/updatePostsUseCase';
-import { CreateCommentsUseCase } from './use-case/createCommentsUseCase';
-import { UpdateLikePostUseCase } from './use-case/updateLikePostUseCase';
+import { CreatePostsCommand } from './use-case/createPostsUseCase';
+import { DeletePostComand } from './use-case/deletePostsUseCase';
+import { UpdatePostCommand } from './use-case/updatePostsUseCase';
+import { CreateCommentsCommand } from './use-case/createCommentsUseCase';
+import { UpdateLikePostCommand } from './use-case/updateLikePostUseCase';
+import { CommandBus } from '@nestjs/cqrs';
+import { GetPostCommand } from './use-case/getPostsUseCese';
+import { PostsRepositoryQuery } from './posts.repositoryMongoQuery';
+import { CommentsRepositoryQuery } from '../comments/comments-repositoryMongoQuery';
+import { getCommentPostCommand } from './use-case/getCommentsPostUseCase';
 let status = ['None', 'Like', 'Dislike'];
 type RequestWithUser = Request & { user: UsersDBTypeWithId };
 class likeStatus {
@@ -50,11 +45,6 @@ class CommonBlogger {
   name: string;
   @IsUrl()
   youtubeUrl: string;
-}
-
-class BloggerWithSurname extends CommonBlogger {
-  @IsString()
-  surname: string;
 }
 
 class UpdatePosts {
@@ -84,11 +74,9 @@ class CommentsUpdate {
 export class PostsController {
   constructor(
     protected postsService: PostsService, //protected commentsServise: CommentsService,
-    private createPostsUseCase: CreatePostsUseCase,
-    private deletePostsUseCase: DeletePostsUseCase,
-    private updatePostsUseCase: UpdatePostsUseCase,
-    private createCommentsUseCase: CreateCommentsUseCase,
-    private updateLikePostUseCase: UpdateLikePostUseCase,
+    protected postsRepositoryQuery: PostsRepositoryQuery,
+    protected commantsRepositoryQuery: CommentsRepositoryQuery,
+    public commandBus: CommandBus,
   ) {}
   @UseGuards(UserId)
   @Get()
@@ -97,13 +85,13 @@ export class PostsController {
     @Query('PageSize') pageSize: number,
     @Req() req: RequestWithUser,
   ) {
-    const getPosts = await this.postsService.getPosts(
+    /*  const getPosts = await this.postsService.getPosts(
       pageNumber || 1,
       pageSize || 10,
-    );
+    ); */
     const userId = req.user?.id;
 
-    const itemsPost = getPosts.items;
+    /* const itemsPost = getPosts.items;
     const items3 = [];
 
     for (let i = 0; i < itemsPost.length; i++) {
@@ -140,18 +128,23 @@ export class PostsController {
       totalCount: getPosts.totalCount,
       items: items3,
     };
-
+ */
+    const result = await this.commandBus.execute(
+      new GetPostCommand(pageNumber || 1, pageSize || 10, userId),
+    );
     return result;
   }
   @UseGuards(AuthBasic)
   @Post()
   @HttpCode(201)
   async createPosts(@Body() body: UpdatePosts) {
-    const postnew = await this.createPostsUseCase.execute(
-      body.title,
-      body.shortDescription,
-      body.content,
-      body.bloggerId,
+    const postnew = await this.commandBus.execute(
+      new CreatePostsCommand(
+        body.title,
+        body.shortDescription,
+        body.content,
+        body.bloggerId,
+      ),
     );
     if (postnew) {
       return postnew;
@@ -169,13 +162,16 @@ export class PostsController {
     @Param('postId') postId: string,
     @Req() req: RequestWithUser,
   ) {
-    const postsid = await this.postsService.getpostsId(postId);
+    const postsid = await this.postsRepositoryQuery.getpostsId(postId);
     const userId = req.user?.id;
     if (!postsid) {
       throw new NotFoundException();
     } else {
-      const likesInformation = await this.postsService.getLike(postId, userId);
-      const newestLikes = await this.postsService.getNewestLikes(
+      const likesInformation = await this.postsRepositoryQuery.getLikeStatus(
+        postId,
+        userId,
+      );
+      const newestLikes = await this.postsRepositoryQuery.getNewestLikes(
         req.params.postsId,
       );
       const newestLikesMap = newestLikes.map((v) => ({
@@ -206,12 +202,14 @@ export class PostsController {
   @Put(':id')
   @HttpCode(204)
   async updatePostsId(@Body() body: UpdatePosts, @Param('id') id: string) {
-    const postsnew = await this.updatePostsUseCase.execute(
-      id,
-      body.title,
-      body.shortDescription,
-      body.content,
-      body.bloggerId,
+    const postsnew = await this.commandBus.execute(
+      new UpdatePostCommand(
+        id,
+        body.title,
+        body.shortDescription,
+        body.content,
+        body.bloggerId,
+      ),
     );
     if (postsnew === false) {
       throw new NotFoundException();
@@ -227,7 +225,7 @@ export class PostsController {
   @Delete(':id')
   @HttpCode(204)
   async deletePosts(@Param('id') id: string) {
-    const isdelete = await this.deletePostsUseCase.execute(id);
+    const isdelete = await this.commandBus.execute(new DeletePostComand(id));
     if (isdelete) {
       return;
     } else {
@@ -247,15 +245,12 @@ export class PostsController {
       throw new UnauthorizedException();
     }
 
-    const findPost = await this.postsService.getpostsId(postId);
+    const findPost = await this.postsRepositoryQuery.getpostsId(postId);
     if (!findPost) {
       throw new NotFoundException();
     } else {
-      const newComment = await this.createCommentsUseCase.execute(
-        userId,
-        userLogin,
-        postId,
-        body2.content,
+      const newComment = await this.commandBus.execute(
+        new CreateCommentsCommand(userId, userLogin, postId, body2.content),
       );
       return newComment;
     }
@@ -269,20 +264,18 @@ export class PostsController {
     @Req() req: RequestWithUser,
   ) {
     const userId = req.user?.id;
-    const post = await this.postsService.getpostsId(postId);
+    const post = await this.postsRepositoryQuery.getpostsId(postId);
     if (!post) {
       throw new NotFoundException();
     }
-    const getComment = await this.postsService.getCommentsPost(
-      pageSize || 10,
-      pageNumber || 1,
-      postId,
+    const getComment = await this.commandBus.execute(
+      new getCommentPostCommand(pageSize || 10, pageNumber || 1, postId),
     );
     const Comment = getComment as commentDBTypePagination;
     const items4 = [];
     for (let i = 0; i < Comment.items.length; i++) {
       const commentId = Comment.items[i].id;
-      const likesInformation = await this.postsService.getLike2(
+      const likesInformation = await this.commantsRepositoryQuery.getLikeStatus(
         commentId,
         userId,
       );
@@ -319,14 +312,12 @@ export class PostsController {
   ) {
     const userId = req.user?.id || '1';
 
-    const postById = await this.postsService.getpostsId(postId);
+    const postById = await this.postsRepositoryQuery.getpostsId(postId);
     if (!postById) {
       throw new NotFoundException();
     }
-    const result = await this.updateLikePostUseCase.execute(
-      postId,
-      userId,
-      body.likeStatus,
+    const result = await this.commandBus.execute(
+      new UpdateLikePostCommand(postId, userId, body.likeStatus),
     );
     return;
   }

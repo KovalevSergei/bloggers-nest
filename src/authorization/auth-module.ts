@@ -16,10 +16,12 @@ import { UsersRepository } from '../users/users-repositorySQL';
 import { UsersService } from '../users/users-service';
 import { AuthController } from './auth-controller';
 import { AuthService } from './auth-service';
+import { CqrsModule } from '@nestjs/cqrs';
 
 const useCase = [CreateUserUseCase];
 @Module({
   imports: [
+    CqrsModule,
     MongooseModule.forFeature([
       { name: USERS_COLLECTION, schema: usersSchema },
     ]),

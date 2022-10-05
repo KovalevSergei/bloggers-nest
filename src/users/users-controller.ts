@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -11,14 +10,16 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { CommandBus } from '@nestjs/cqrs';
 import { Transform, TransformFnParams } from 'class-transformer';
-import { IsEmail, isEmail, IsNotEmpty, Length } from 'class-validator';
+import { IsEmail, IsNotEmpty, Length } from 'class-validator';
 
 import { AuthBasic } from '../guards/authBasic.guards';
 import { LoginFindDoublicate } from '../guards/loginFindDoublicate';
 import { MailFindDoublicate } from '../guards/mailFindDoublicate';
-import { CreateUserUseCase } from './use-case/createUserUseCase';
-import { DeleteUserUseCase } from './use-case/deleteUserUseCase';
+import { CreateUserCommand } from './use-case/createUserUseCase';
+import { DeleteUserCommand } from './use-case/deleteUserUseCase';
+import { UsersRepositoryQuery } from './users-repositoryMongoQuery';
 import { UsersService } from './users-service';
 class CreateUser {
   @IsNotEmpty()
@@ -37,8 +38,8 @@ class CreateUser {
 export class UsersController {
   constructor(
     protected usersService: UsersService,
-    private createUserUseCase: CreateUserUseCase,
-    private deleteUserUseCase: DeleteUserUseCase,
+    protected usersRepositoryQuery: UsersRepositoryQuery,
+    private commandBus: CommandBus,
   ) {}
   @UseGuards(AuthBasic)
   @UseGuards(MailFindDoublicate)
@@ -50,10 +51,8 @@ export class UsersController {
     const password: string = body.password;
     const email: string = body.email;
 
-    const newUser = await this.createUserUseCase.execute(
-      login,
-      email,
-      password,
+    const newUser = await this.commandBus.execute(
+      new CreateUserCommand(login, email, password),
     );
 
     const user = { id: newUser.id, login: newUser.accountData.login };
@@ -64,7 +63,7 @@ export class UsersController {
     @Query('PageNumber') PageNumber: number,
     @Query('PageSize') PageSize: number,
   ) {
-    const getUsers = await this.usersService.getUsers(
+    const getUsers = await this.usersRepositoryQuery.getUsers(
       PageNumber || 1,
       PageSize || 10,
     );
@@ -74,7 +73,7 @@ export class UsersController {
   @Delete(':id')
   @HttpCode(204)
   async deleteUserId(@Param('id') id: string) {
-    const userDel = await this.deleteUserUseCase.execute(id);
+    const userDel = await this.commandBus.execute(new DeleteUserCommand(id));
     if (userDel) {
       return;
     } else {

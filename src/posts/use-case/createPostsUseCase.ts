@@ -16,29 +16,36 @@ import {
   postsDBType,
   postsType,
 } from '../posts.type';
-
-@Injectable()
-export class CreatePostsUseCase {
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { BloggersRepositoryQuery } from '../../bloggers/bloggers.repositoryQueryMongo';
+export class CreatePostsCommand {
+  constructor(
+    public title: string,
+    public shortDescription: string,
+    public content: string,
+    public bloggerId: string,
+  ) {}
+}
+@CommandHandler(CreatePostsCommand)
+export class CreatePostsUseCase implements ICommandHandler<CreatePostsCommand> {
   constructor(
     protected postsRepository: PostsRepository,
     protected bloggersRepository: BloggersRepository,
+    protected bloggersRepositoryQuery: BloggersRepositoryQuery,
   ) {}
   //protected usersRepository: UsersRepository){}
 
-  async execute(
-    title: string,
-    shortDescription: string,
-    content: string,
-    bloggerId: string,
-  ): Promise<postsType | boolean> {
-    const nameblog = await this.bloggersRepository.getBloggersById(bloggerId);
+  async execute(command: CreatePostsCommand): Promise<postsType | boolean> {
+    const nameblog = await this.bloggersRepositoryQuery.getBloggersById(
+      command.bloggerId,
+    );
     if (nameblog) {
       const postnew = {
         id: Number(new Date()).toString(),
-        title: title,
-        shortDescription: shortDescription,
-        content: content,
-        bloggerId: bloggerId,
+        title: command.title,
+        shortDescription: command.shortDescription,
+        content: command.content,
+        bloggerId: command.bloggerId,
         bloggerName: nameblog.name,
         addedAt: new Date(),
         //extendedLikesInfo: {
@@ -51,10 +58,10 @@ export class CreatePostsUseCase {
       await this.postsRepository.createPosts(postnew);
       const postnew2 = {
         id: postnew.id,
-        title: title,
-        shortDescription: shortDescription,
-        content: content,
-        bloggerId: bloggerId,
+        title: command.title,
+        shortDescription: command.shortDescription,
+        content: command.content,
+        bloggerId: command.bloggerId,
         bloggerName: nameblog.name,
         addedAt: postnew.addedAt,
         extendedLikesInfo: {

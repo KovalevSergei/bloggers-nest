@@ -16,50 +16,58 @@ import {
   postsDBType,
   postsType,
 } from '../posts.type';
-
-@Injectable()
-export class UpdateLikePostUseCase {
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+export class UpdateLikePostCommand {
+  constructor(
+    public postId: string,
+    public userId: string,
+    public status: string,
+  ) {}
+}
+@CommandHandler(UpdateLikePostCommand)
+export class UpdateLikePostUseCase
+  implements ICommandHandler<UpdateLikePostCommand>
+{
   constructor(
     protected postsRepository: PostsRepository,
     protected usersRepository: UsersRepository,
   ) {}
   //protected usersRepository: UsersRepository){}
 
-  async execute(
-    postId: string,
-    userId: string,
-    status: string,
-  ): Promise<boolean> {
-    const findLike = await this.postsRepository.findLikeStatus(postId, userId);
-    const login = await this.usersRepository.getUserById(userId);
+  async execute(command: UpdateLikePostCommand): Promise<boolean> {
+    const findLike = await this.postsRepository.findLikeStatus(
+      command.postId,
+      command.userId,
+    );
+    const login = await this.usersRepository.getUserById(command.userId);
     const login2 = login as UsersDBType;
-    if (!findLike && status != 'None') {
+    if (!findLike && command.status != 'None') {
       const likePostForm = new likePosts(
-        postId,
-        userId,
+        command.postId,
+        command.userId,
         login2.accountData.login,
-        status,
+        command.status,
         new Date(),
       );
       const result = await this.postsRepository.createLikeStatus(likePostForm);
       return true;
     }
     if (findLike && status === 'None') {
-      await this.postsRepository.deleteLike(postId, userId);
+      await this.postsRepository.deleteLike(command.postId, command.userId);
       return true;
     }
 
     if (findLike?.myStatus === status) {
       return true;
     } else {
-      await this.postsRepository.deleteLike(postId, userId);
-      const login = await this.usersRepository.getUserById(userId);
+      await this.postsRepository.deleteLike(command.postId, command.userId);
+      const login = await this.usersRepository.getUserById(command.userId);
       const login2 = login as UsersDBType;
       const likePostForm = new likePosts(
-        postId,
-        userId,
+        command.postId,
+        command.userId,
         login2.accountData.login,
-        status,
+        command.status,
         new Date(),
       );
       const result = await this.postsRepository.createLikeStatus(likePostForm);

@@ -1,47 +1,38 @@
-import { Injectable } from '@nestjs/common';
 import { BloggersRepository } from '../../bloggers/bloggersSQL.repository';
-import { CommentsRepository } from '../../comments/comments-repositorySQL';
-import {
-  commentDBTypePagination,
-  commentsDBPostIdType,
-  commentsDBType2,
-} from 'src/comments/comments.type';
-import { Posts } from '../../db.sql';
-import { UsersRepository } from '../../users/users-repositorySQL';
-import { UsersDBType } from '../../users/users.type';
 import { PostsRepository } from '../posts.repositorySQL';
-import {
-  likePosts,
-  likePostWithId,
-  postsDBType,
-  postsType,
-} from '../posts.type';
-
-@Injectable()
-export class UpdatePostsUseCase {
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { BloggersRepositoryQuery } from '../../bloggers/bloggers.repositoryQueryMongo';
+export class UpdatePostCommand {
+  constructor(
+    public id: string,
+    public title: string,
+    public shortDescription: string,
+    public content: string,
+    public bloggerId: string,
+  ) {}
+}
+@CommandHandler(UpdatePostCommand)
+export class UpdatePostsUseCase implements ICommandHandler<UpdatePostCommand> {
   constructor(
     protected postsRepository: PostsRepository,
     protected bloggersRepository: BloggersRepository,
+    protected bloggersRepositoryQuery: BloggersRepositoryQuery,
   ) {}
   //protected usersRepository: UsersRepository){}
 
-  async execute(
-    id: string,
-    title: string,
-    shortDescription: string,
-    content: string,
-    bloggerId: string,
-  ): Promise<boolean | null> {
-    const nameblog = await this.bloggersRepository.getBloggersById(bloggerId);
+  async execute(command: UpdatePostCommand): Promise<boolean | null> {
+    const nameblog = await this.bloggersRepositoryQuery.getBloggersById(
+      command.bloggerId,
+    );
 
     if (!nameblog) {
       return null;
     } else {
       return await this.postsRepository.updatePostsId(
-        id,
-        title,
-        shortDescription,
-        content,
+        command.id,
+        command.title,
+        command.shortDescription,
+        command.content,
       );
     }
   }

@@ -26,7 +26,11 @@ import { UsersDBType } from '../users/users.type';
 import { truncate } from 'fs';
 import { MailFindDoublicate } from '../guards/mailFindDoublicate';
 import { LoginFindDoublicate } from '../guards/loginFindDoublicate';
-import { CreateUserUseCase } from '../users/use-case/createUserUseCase';
+import {
+  CreateUserCommand,
+  CreateUserUseCase,
+} from '../users/use-case/createUserUseCase';
+import { CommandBus } from '@nestjs/cqrs';
 class AuthBody {
   @IsNotEmpty()
   @Transform(({ value }: TransformFnParams) => value?.trim())
@@ -65,6 +69,7 @@ export class AuthController {
     protected usersServis: UsersService,
     protected jwtService: JwtService,
     private createUserUseCase: CreateUserUseCase,
+    private commandBus: CommandBus,
   ) {}
   @UseGuards(Mistake429)
   @Post('login')
@@ -105,10 +110,8 @@ export class AuthController {
   @Post('registration')
   @HttpCode(204)
   async createUser(@Body() body: CreateUser) {
-    const user = await this.createUserUseCase.execute(
-      body.login,
-      body.email,
-      body.password,
+    const user = await this.commandBus.execute(
+      new CreateUserCommand(body.login, body.email, body.password),
     );
 
     return user;

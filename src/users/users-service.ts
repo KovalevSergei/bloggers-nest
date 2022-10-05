@@ -45,7 +45,7 @@ export class UsersService {
     return hash;
   }
 
-  async getUsers(
+  /*  async getUsers(
     PageNumber: number,
     PageSize: number,
   ): Promise<usersGetDBType> {
@@ -70,7 +70,7 @@ export class UsersService {
     };
 
     return result;
-  }
+  } */
   // async deleteUserId(id: string): Promise<boolean> {
   //   return this.usersRepository.deleteUsersId(id);
   // }

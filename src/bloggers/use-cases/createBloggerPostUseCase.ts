@@ -3,6 +3,7 @@ import { PostsRepository } from '../../posts/posts.repositorySQL';
 import { BloggersRepository } from '../bloggersSQL.repository';
 import { postsType } from '../../posts/posts.type';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { BloggersRepositoryQuery } from '../bloggers.repositoryQueryMongo';
 
 export class CreateBloggersPostCommand {
   constructor(
@@ -20,6 +21,7 @@ export class CreateBloggersPostUseCase
   constructor(
     protected bloggersRepository: BloggersRepository,
     protected postsRepository: PostsRepository, //protected postsService: PostsService,
+    protected bloggersRepositoryQuery: BloggersRepositoryQuery,
   ) {}
 
   async execute(
@@ -29,7 +31,7 @@ export class CreateBloggersPostUseCase
     // shortDescription: string,
     // content: string,
   ): Promise<postsType | boolean> {
-    const findName = await this.bloggersRepository.getBloggersById(
+    const findName = await this.bloggersRepositoryQuery.getBloggersById(
       command.bloggerId,
     );
 

@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
+import { CqrsModule } from '@nestjs/cqrs';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { UsersRepositoryQuery } from '../users/users-repositoryMongoQuery';
 import { JwtService } from '../application/jwt-service';
 import {
   commentsSchema,
@@ -18,11 +20,20 @@ import { UsersRepository } from '../users/users-repositorySQL';
 import { UsersService } from '../users/users-service';
 
 import { CommentsController } from './comments-controller';
+import { CommentsRepositoryQuery } from './comments-repositoryMongoQuery';
 import { CommentsRepository } from './comments-repositorySQL';
 import { CommentsService } from './comments-service';
-
+import { DeleteCommentUseCase } from './use-case/deleteCommentCommand';
+import { UpdateCommentUseCase } from './use-case/updateCommentCommand';
+import { UpdateLikeCommentsUseCase } from './use-case/updateLikeCommentsCommand';
+const useCase = [
+  UpdateCommentUseCase,
+  DeleteCommentUseCase,
+  UpdateLikeCommentsUseCase,
+];
 @Module({
   imports: [
+    CqrsModule,
     //TypeOrmModule.forFeature([Comments]),
     // TypeOrmModule.forFeature([LikeComments]),
     MongooseModule.forFeature([
@@ -45,6 +56,9 @@ import { CommentsService } from './comments-service';
     UsersRepository,
     JwtService,
     UsersService,
+    CommentsRepositoryQuery,
+    UsersRepositoryQuery,
+    ...useCase,
   ],
   //exports: [],
 })

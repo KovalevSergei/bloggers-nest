@@ -1,24 +1,24 @@
-import { Injectable } from '@nestjs/common';
 import { BloggersRepository } from '../../bloggers/bloggersSQL.repository';
 import { CommentsRepository } from '../../comments/comments-repositorySQL';
 import {
-  commentDBTypePagination,
   commentsDBPostIdType,
   commentsDBType2,
 } from 'src/comments/comments.type';
-import { Posts } from '../../db.sql';
-import { UsersRepository } from '../../users/users-repositorySQL';
-import { UsersDBType } from '../../users/users.type';
-import { PostsRepository } from '../posts.repositorySQL';
-import {
-  likePosts,
-  likePostWithId,
-  postsDBType,
-  postsType,
-} from '../posts.type';
 
-@Injectable()
-export class CreateCommentsUseCase {
+import { PostsRepository } from '../posts.repositorySQL';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+export class CreateCommentsCommand {
+  constructor(
+    public userId: string,
+    public userLogin: string,
+    public postId: string,
+    public content: string,
+  ) {}
+}
+@CommandHandler(CreateCommentsCommand)
+export class CreateCommentsUseCase
+  implements ICommandHandler<CreateCommentsCommand>
+{
   constructor(
     protected postsRepository: PostsRepository,
     protected bloggersRepository: BloggersRepository,
@@ -26,19 +26,14 @@ export class CreateCommentsUseCase {
   ) {}
   //protected usersRepository: UsersRepository){}
 
-  async execute(
-    userId: string,
-    userLogin: string,
-    postId: string,
-    content: string,
-  ): Promise<commentsDBType2> {
+  async execute(command: CreateCommentsCommand): Promise<commentsDBType2> {
     const commentNew: commentsDBPostIdType = {
       id: Number(new Date()).toString(),
-      content: content,
-      userId: userId,
-      userLogin: userLogin,
+      content: command.content,
+      userId: command.userId,
+      userLogin: command.userLogin,
       addedAt: new Date().toString(),
-      postId: postId,
+      postId: command.postId,
     };
     const result = await this.commentsRepository.createComment(commentNew);
     const result2 = {

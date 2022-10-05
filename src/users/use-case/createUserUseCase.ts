@@ -6,29 +6,32 @@ import { v4 as uuidv4 } from 'uuid';
 import { compareAsc, format, add } from 'date-fns';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users-service';
-
-@Injectable()
-export class CreateUserUseCase {
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+export class CreateUserCommand {
+  constructor(
+    public login: string,
+    public email: string,
+    public password: string,
+  ) {}
+}
+@CommandHandler(CreateUserCommand)
+export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
   constructor(
     protected usersRepository: UsersRepository,
     protected usersService: UsersService,
   ) {}
-  async execute(
-    login: string,
-    email: string,
-    password: string,
-  ): Promise<UsersDBType> {
+  async execute(command: CreateUserCommand): Promise<UsersDBType> {
     const passwordSalt = await bcrypt.genSalt(10);
     const passwordHash = await this.usersService._generateHash(
-      password,
+      command.password,
       passwordSalt,
     );
 
     const newUser: UsersDBType = {
       id: Number(new Date()).toString(),
       accountData: {
-        login: login,
-        email: email,
+        login: command.login,
+        email: command.email,
         passwordHash,
         passwordSalt,
         createdAt: new Date(),

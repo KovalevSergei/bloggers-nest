@@ -11,6 +11,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { CommandBus } from '@nestjs/cqrs';
 import { Transform, TransformFnParams } from 'class-transformer';
 import { IsArray, IsIn, IsNotEmpty, Length } from 'class-validator';
 import { NotFoundError } from 'rxjs';
@@ -18,7 +19,14 @@ import { Auth } from '../guards/Auth';
 import { UserFind } from '../guards/userFind';
 import { UserId } from '../guards/userId';
 import { UsersDBTypeWithId } from '../users/users.type';
+import { CommentsRepositoryQuery } from './comments-repositoryMongoQuery';
 import { CommentsService } from './comments-service';
+import { DeleteCommentCommand } from './use-case/deleteCommentCommand';
+import {
+  UpdateCommentCommand,
+  UpdateCommentUseCase,
+} from './use-case/updateCommentCommand';
+import { UpdateLikeCommentsCommand } from './use-case/updateLikeCommentsCommand';
 type RequestWithUser = Request & { user: UsersDBTypeWithId };
 let status2 = ['None', 'Like', 'Dislike'];
 class like {
@@ -33,7 +41,11 @@ class CommetnsUpdate {
 }
 @Controller('comments')
 export class CommentsController {
-  constructor(protected commentsService: CommentsService) {}
+  constructor(
+    protected commentsService: CommentsService,
+    protected commandBus: CommandBus,
+    protected commentsRepositoryQuery: CommentsRepositoryQuery,
+  ) {}
   @UseGuards(Auth)
   @UseGuards(UserId)
   @Put(':commentId')
@@ -43,16 +55,18 @@ export class CommentsController {
     @Body() body: CommetnsUpdate,
     @Req() req: RequestWithUser,
   ) {
-    const commentById = await this.commentsService.getComment(commentId);
+    const commentById = await this.commentsRepositoryQuery.getComment(
+      commentId,
+    );
     const userId = req.user?.id || '1';
     ///const useriD = req.user?.id || "1";
     if (commentById.userId !== userId) {
       throw new ForbiddenException();
     }
-    const contentnew = await this.commentsService.updateContent(
-      body.content,
-      commentId,
-      // useriD
+
+    const contentnew = await this.commandBus.execute(
+      new UpdateCommentCommand(body.content, commentId),
+      // useriD)
     );
     if (contentnew) {
       return;
@@ -66,13 +80,15 @@ export class CommentsController {
     @Param('commentId') commentId: string,
     @Req() req: RequestWithUser,
   ) {
-    const commentById = await this.commentsService.getComment(commentId);
+    const commentById = await this.commentsRepositoryQuery.getComment(
+      commentId,
+    );
     const userId = req.user?.id || '1';
 
     if (!commentById) {
       throw new NotFoundException();
     } else {
-      const likesInformation = await this.commentsService.getLike(
+      const likesInformation = await this.commentsRepositoryQuery.getLikeStatus(
         commentId,
         userId,
       );
@@ -93,7 +109,7 @@ export class CommentsController {
   @Delete(':id')
   @HttpCode(204)
   async deleteComment(@Param('id') id: string, @Req() req: RequestWithUser) {
-    const commentById = await this.commentsService.getComment(id);
+    const commentById = await this.commentsRepositoryQuery.getComment(id);
     if (!commentById) {
       throw new NotFoundException('Comment Not Found');
     }
@@ -102,7 +118,9 @@ export class CommentsController {
     if (commentById.userId !== userId) {
       throw new ForbiddenException();
     }
-    const isdelete = await this.commentsService.deleteComment(id);
+    const isdelete = await this.commandBus.execute(
+      new DeleteCommentCommand(id),
+    );
     if (isdelete) {
       return;
     }
@@ -115,15 +133,15 @@ export class CommentsController {
     @Body() body: like,
     @Req() req: RequestWithUser,
   ) {
-    const commentById = await this.commentsService.getComment(commentId);
+    const commentById = await this.commentsRepositoryQuery.getComment(
+      commentId,
+    );
     if (!commentById) {
       throw new NotFoundException();
     }
     const userId = req.user?.id || '1';
-    const result = await this.commentsService.updateLikeComments(
-      commentId,
-      userId,
-      body.likeStatus,
+    const result = await this.commandBus.execute(
+      new UpdateLikeCommentsCommand(commentId, userId, body.likeStatus),
     );
     return;
   }

@@ -10,20 +10,14 @@ interface usersReturn {
   totalCount: number;
 }
 @Injectable()
-export class UsersRepository {
+export class UsersRepositoryQuery {
   constructor(
     @InjectModel(USERS_COLLECTION)
     private usersModel: Model<UsersDBType>,
     @InjectModel(TOKEN_COLLECTION)
     private tokenModel: Model<RefreshToken>,
   ) {}
-  async createUser(newUser: UsersDBType): Promise<UsersDBType> {
-    const createUser = await this.usersModel.insertMany({
-      ...newUser,
-      _id: new ObjectId(),
-    });
-    return newUser;
-  }
+
   async getUsers(
     PageSize: number,
     PageNumber: number,
@@ -50,10 +44,7 @@ export class UsersRepository {
     };
     return result;
   }
-  async deleteUsersId(id: string): Promise<boolean> {
-    const result = await this.usersModel.deleteOne({ id: id });
-    return result.deletedCount === 1;
-  }
+
   async userGetLogin(login: string): Promise<boolean> {
     const usersFind = await this.usersModel.find({ login: login }).lean();
     console.log(usersFind);
@@ -80,13 +71,7 @@ export class UsersRepository {
     );
     return result;
   }
-  async updateConfirmation(id: string) {
-    const result = await this.usersModel.updateOne(
-      { id },
-      { $set: { 'emailConfirmation.isConfirmed': true } },
-    );
-    return result.modifiedCount === 1;
-  }
+
   async findByConfirmationCode(code: string) {
     const user = await this.usersModel.findOne({
       'emailConfirmation.confirmationCode': code,
@@ -100,13 +85,7 @@ export class UsersRepository {
     });
     return user;
   }
-  async updateCode(id: string, code: string) {
-    const result = await this.usersModel.updateOne(
-      { id },
-      { $set: { 'emailConfirmation.confirmationCode': code } },
-    );
-    return result.modifiedCount === 1;
-  }
+
   async refreshTokenSave(token: string) {
     const result = await new this.tokenModel({
       token: token,
@@ -123,9 +102,5 @@ export class UsersRepository {
     }
 
     return result.token;
-  }
-  async refreshTokenKill(token: string): Promise<boolean> {
-    const result = await this.tokenModel.deleteOne({ token: token });
-    return result.deletedCount === 1;
   }
 }
