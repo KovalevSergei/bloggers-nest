@@ -1,22 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { BloggersRepository } from '../../bloggers/bloggersSQL.repository';
 import { CommentsRepository } from '../../comments/comments-repositorySQL';
-import {
-  commentDBTypePagination,
-  commentsDBPostIdType,
-  commentsDBType2,
-} from 'src/comments/comments.type';
-import { Posts } from '../../db.sql';
-import { UsersRepository } from '../../users/users-repositorySQL';
-import { UsersDBType } from '../../users/users.type';
+
 import { PostsRepository } from '../posts.repositorySQL';
-import {
-  likePosts,
-  likePostWithId,
-  postsDBType,
-  postsType,
-} from '../posts.type';
+import { postsDBType } from '../posts.type';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { PostsRepositoryQuery } from '../posts.repositoryMongoQuery';
 export class GetPostCommand {
   constructor(
     public pageNumber: number,
@@ -27,7 +16,7 @@ export class GetPostCommand {
 @CommandHandler(GetPostCommand)
 export class GetPostUseCase implements ICommandHandler<GetPostCommand> {
   constructor(
-    protected postsRepository: PostsRepository,
+    protected postsRepositoryQuery: PostsRepositoryQuery,
     protected bloggersRepository: BloggersRepository,
     protected commentsRepository: CommentsRepository,
   ) {}
@@ -40,7 +29,7 @@ export class GetPostUseCase implements ICommandHandler<GetPostCommand> {
     totalCount: number;
     items: any[];
   }> {
-    const { items, totalCount } = await this.postsRepository.getPosts(
+    const { items, totalCount } = await this.postsRepositoryQuery.getPosts(
       command.pageNumber,
       command.pageSize,
     );
@@ -68,11 +57,13 @@ export class GetPostUseCase implements ICommandHandler<GetPostCommand> {
 
     for (let i = 0; i < itemsPost.length; i++) {
       const postId = itemsPost[i].id;
-      const likesInformation = await this.postsRepository.getLikeStatus(
+      const likesInformation = await this.postsRepositoryQuery.getLikeStatus(
         postId,
         command.userId,
       );
-      const newestLikes = await this.postsRepository.getNewestLikes(postId);
+      const newestLikes = await this.postsRepositoryQuery.getNewestLikes(
+        postId,
+      );
       const newestLikesMap = newestLikes.map((v) => ({
         addedAt: v.addedAt,
         userId: v.userId,

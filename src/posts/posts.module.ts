@@ -44,6 +44,7 @@ import { PostsRepositoryQuery } from './posts.repositoryMongoQuery';
 import { getCommentPostUseCase } from './use-case/getCommentsPostUseCase';
 import { BloggersRepositoryQuery } from '../bloggers/bloggers.repositoryQueryMongo';
 import { CommentsRepositoryQuery } from '../comments/comments-repositoryMongoQuery';
+import { UsersRepositoryQuery } from '../users/users-repositoryMongoQuery';
 const useCase = [
   CreatePostsUseCase,
   DeletePostsUseCase,
@@ -96,6 +97,7 @@ const useCase = [
     UsersService,
     BloggersRepositoryQuery,
     CommentsRepositoryQuery,
+    UsersRepositoryQuery,
     ...useCase,
   ],
 })

@@ -3,12 +3,13 @@ import { Request } from 'express';
 import { UsersDBTypeWithId } from '../users/users.type';
 import { JwtService } from '../application/jwt-service';
 import { UsersService } from '../users/users-service';
+import { UsersRepositoryQuery } from '../users/users-repositoryMongoQuery';
 type RequestWithUser = Request & { user: UsersDBTypeWithId };
 @Injectable()
 export class UserId implements CanActivate {
   constructor(
     protected jwtService: JwtService,
-    protected usersService: UsersService,
+    protected usersRepositoryQuery: UsersRepositoryQuery,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req: RequestWithUser = context.switchToHttp().getRequest();
@@ -24,7 +25,7 @@ export class UserId implements CanActivate {
 
     if (userId) {
       //const usersService = new UsersService(new UsersRepository());
-      req.user = await this.usersService.findUserById(userId);
+      req.user = await this.usersRepositoryQuery.findUserById(userId);
 
       return true;
     }

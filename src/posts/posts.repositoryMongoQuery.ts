@@ -95,23 +95,7 @@ export class PostsRepositoryQuery {
       items: items,
     };
   }
-  async createLikeStatus(likePostForm: likePosts): Promise<boolean> {
-    const likeInstance = new this.likePostsModel();
-    likeInstance.postsId = likePostForm.postsId;
-    likeInstance.userId = likePostForm.userId;
-    likeInstance.myStatus = likePostForm.myStatus;
-    likeInstance.addedAt = likePostForm.addedAt;
-    likeInstance.login = likePostForm.login;
-    await likeInstance.save();
-    return true;
-  }
-  async deleteLike(postId: string, userId: string): Promise<boolean> {
-    const result = await this.likePostsModel.deleteOne({
-      postsId: postId,
-      userId: userId,
-    });
-    return true;
-  }
+
   async getLikeStatus(
     postId: string,
     userId: string,

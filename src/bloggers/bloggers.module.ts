@@ -32,6 +32,8 @@ import { DeleteBloggersByIdUseCase } from './use-cases/deleteBloggersByIdUseCase
 import { BloggersRepositoryQuery } from './bloggers.repositoryQueryMongo';
 import { CommandBus, CqrsModule } from '@nestjs/cqrs';
 import { GetBloggersPostUseCase } from './use-cases/getBloggersPostsUseCase';
+import { PostsRepositoryQuery } from '../posts/posts.repositoryMongoQuery';
+import { UsersRepositoryQuery } from '../users/users-repositoryMongoQuery';
 
 const useCases = [
   CreateBloggersUseCase,
@@ -69,6 +71,8 @@ const useCases = [
     UsersService,
     UsersRepository,
     BloggersRepositoryQuery,
+    PostsRepositoryQuery,
+    UsersRepositoryQuery,
     ...useCases,
   ],
   //exports: [BloggersRepository],

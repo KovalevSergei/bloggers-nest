@@ -13,8 +13,6 @@ import {
 } from '@nestjs/common';
 import { Transform, TransformFnParams } from 'class-transformer';
 import { IsEmail, IsNotEmpty, Length } from 'class-validator';
-import { response } from 'express';
-import { send } from 'process';
 import { JwtService } from '../application/jwt-service';
 import { UsersService } from '../users/users-service';
 import { AuthService } from './auth-service';
@@ -23,14 +21,16 @@ import { Response } from 'express';
 import { Auth } from '../guards/Auth';
 import { Mistake429 } from '../guards/Mistake429';
 import { UsersDBType } from '../users/users.type';
-import { truncate } from 'fs';
 import { MailFindDoublicate } from '../guards/mailFindDoublicate';
 import { LoginFindDoublicate } from '../guards/loginFindDoublicate';
-import {
-  CreateUserCommand,
-  CreateUserUseCase,
-} from '../users/use-case/createUserUseCase';
+import { CreateUserCommand } from '../users/use-case/createUserUseCase';
 import { CommandBus } from '@nestjs/cqrs';
+import { UsersRepositoryQuery } from '../users/users-repositoryMongoQuery';
+import { ChechCredentialCommand } from '../users/use-case/checkCredentialsCommand';
+import { ConfirmEmailCommand } from './use-case/confirmEmailCommand';
+import { ConfirmCodeCommand } from './use-case/confirmCode2Command';
+import { RefreshTokenFindCommand } from './use-case/refreshTokenFinCommand';
+import { RefreshTokenKillCommand } from './use-case/refreshTokenKillCommand';
 class AuthBody {
   @IsNotEmpty()
   @Transform(({ value }: TransformFnParams) => value?.trim())
@@ -68,7 +68,7 @@ export class AuthController {
     protected authService: AuthService,
     protected usersServis: UsersService,
     protected jwtService: JwtService,
-    private createUserUseCase: CreateUserUseCase,
+    protected usersRepositoryQuery: UsersRepositoryQuery,
     private commandBus: CommandBus,
   ) {}
   @UseGuards(Mistake429)
@@ -78,17 +78,15 @@ export class AuthController {
     @Body() body: AuthBody,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const user = await this.usersServis.getUserByLogin(body.login);
+    const user = await this.usersRepositoryQuery.FindUserLogin(body.login);
 
     if (!user) {
       throw new UnauthorizedException();
     }
     // req.ip or req.headers['x-forwarder-for'] or req.connection.remoteAddress
 
-    const areCredentialsCorrect = await this.usersServis.checkCredentials(
-      user,
-      body.login,
-      body.password,
+    const areCredentialsCorrect = await this.commandBus.execute(
+      new ChechCredentialCommand(body.login, body.password),
     );
     if (!areCredentialsCorrect) {
       throw new UnauthorizedException();
@@ -120,7 +118,9 @@ export class AuthController {
   @Post('registration-email-resending')
   @HttpCode(204)
   async registrationEmailResending(@Body() body: Email) {
-    const result = await this.authService.confirmEmail(body.email);
+    const result = await this.commandBus.execute(
+      new ConfirmEmailCommand(body.email),
+    );
     if (result) {
       return;
     } else {
@@ -138,7 +138,9 @@ export class AuthController {
   @Post('registration-confirmation')
   @HttpCode(204)
   async confirmCode(@Body() body: CreateUserCode) {
-    const codeReturn = await this.authService.confirmCode2(body.code);
+    const codeReturn = await this.commandBus.execute(
+      new ConfirmCodeCommand(body.code),
+    );
     if (!codeReturn) {
       throw new HttpException(
         {
@@ -167,7 +169,9 @@ export class AuthController {
       );
     }
 
-    const result = await this.authService.confirmCode(body.code);
+    const result = await this.commandBus.execute(
+      new ConfirmCodeCommand(body.code),
+    );
     return;
   }
   @Post('refresh-token')
@@ -185,14 +189,16 @@ export class AuthController {
     if (tokenExpire === null) {
       throw new UnauthorizedException();
     }
-    const findToken = await this.authService.refreshTokenFind(refreshToken);
+    const findToken = await this.commandBus.execute(
+      new RefreshTokenFindCommand(refreshToken),
+    );
 
     if (findToken === false) {
       throw new UnauthorizedException();
     }
-    await this.authService.refreshTokenKill(refreshToken);
+    await this.commandBus.execute(new RefreshTokenKillCommand(refreshToken));
     const userId = await this.jwtService.getUserIdByToken(refreshToken);
-    const user = await this.usersServis.findUserById(userId);
+    const user = await this.usersRepositoryQuery.findUserById(userId);
     if (!user) {
       throw new UnauthorizedException();
     }
@@ -224,7 +230,7 @@ export class AuthController {
       throw new UnauthorizedException();
     } else {
       const userId = await this.jwtService.getUserIdByToken(token);
-      const user = await this.usersServis.findUserById(userId);
+      const user = await this.usersRepositoryQuery.findUserById(userId);
 
       const result = {
         email: user?.accountData.email,

@@ -17,10 +17,12 @@ import { IsEmail, IsNotEmpty, Length } from 'class-validator';
 import { AuthBasic } from '../guards/authBasic.guards';
 import { LoginFindDoublicate } from '../guards/loginFindDoublicate';
 import { MailFindDoublicate } from '../guards/mailFindDoublicate';
+
 import { CreateUserCommand } from './use-case/createUserUseCase';
 import { DeleteUserCommand } from './use-case/deleteUserUseCase';
 import { UsersRepositoryQuery } from './users-repositoryMongoQuery';
 import { UsersService } from './users-service';
+
 class CreateUser {
   @IsNotEmpty()
   @Transform(({ value }: TransformFnParams) => value?.trim())

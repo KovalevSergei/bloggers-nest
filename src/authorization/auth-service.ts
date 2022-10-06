@@ -3,9 +3,6 @@ import { JwtService } from '../application/jwt-service';
 import { EmailAdapter } from '../email/email-service';
 import { UsersRepository } from '../users/users-repositorySQL';
 import { UsersService } from '../users/users-service';
-import { UsersDBType } from '../users/users.type';
-import { v4 as uuidv4 } from 'uuid';
-import { CreateUserUseCase } from 'src/users/use-case/createUserUseCase';
 
 @Injectable()
 export class AuthService {
@@ -55,7 +52,7 @@ export class AuthService {
   //   }
   //   return createResult;
   // }
-  async confirmEmail(email: string): Promise<boolean> {
+  /*  async confirmEmail(email: string): Promise<boolean> {
     let user = await this.usersRepository.findByEmail(email);
 
     if (!user) return false;
@@ -65,16 +62,16 @@ export class AuthService {
     this.emailAdapter.sendEmail(email, 'email', code);
 
     return true;
-  }
-  async confirmCode2(code: string): Promise<UsersDBType | boolean> {
-    let user = await this.usersRepository.findByConfirmationCode(code);
-    if (!user) return false;
-    if (user.emailConfirmation.isConfirmed) return false;
+  } */
+  // async confirmCode2(code: string): Promise<UsersDBType | boolean> {
+  //   let user = await this.usersRepository.findByConfirmationCode(code);
+  //   if (!user) return false;
+  //   if (user.emailConfirmation.isConfirmed) return false;
 
-    return user;
-  }
+  //   return user;
+  // }
 
-  async confirmCode(code: string): Promise<boolean> {
+  /*   async confirmCode(code: string): Promise<boolean> {
     let user = await this.usersRepository.findByConfirmationCode(code);
     if (!user) return false;
     if (user.emailConfirmation.isConfirmed) return false;
@@ -82,45 +79,33 @@ export class AuthService {
     let result = await this.usersRepository.updateConfirmation(user.id); //подтвердить пользователя с таким айди
 
     return result;
-  }
-  async refreshTokenSave(token: string): Promise<boolean | string> {
+  } */
+  /*   async refreshTokenSave(token: string): Promise<boolean | string> {
     let refreshToken = await this.usersRepository.refreshTokenSave(token);
     return refreshToken;
-  }
-  async refreshTokenFind(token: string): Promise<boolean> {
-    let refreshTokenFind = await this.usersRepository.refreshTokenFind(token);
-    if (refreshTokenFind === null) {
-      return false;
-    }
-    let refreshTokenTimeOut = await this.jwtService.getUserIdByToken(token);
+  } */
 
-    if (refreshTokenTimeOut === null) {
-      return false;
-    } else {
-      return true;
-    }
-  }
-  async refreshTokenKill(token: string): Promise<boolean> {
+  /*   async refreshTokenKill(token: string): Promise<boolean> {
     let result = await this.usersRepository.refreshTokenKill(token);
     if (result === false) {
       return false;
     } else {
       return true;
     }
-  }
-  async findEmail(email: string): Promise<boolean> {
+  } */
+  /*   async findEmail(email: string): Promise<boolean> {
     let result = this.usersRepository.findByEmail(email);
     if (!result) {
       return true;
     }
     return false;
-  }
+  } */
 
-  async findLogin(login: string): Promise<boolean> {
+  /*   async findLogin(login: string): Promise<boolean> {
     let result = this.usersRepository.FindUserLogin(login);
     if (!result) {
       return true;
     }
     return false;
-  }
+  } */
 }

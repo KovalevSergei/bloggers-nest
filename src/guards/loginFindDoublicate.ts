@@ -7,15 +7,17 @@ import {
 import { Request } from 'express';
 import { UsersDBTypeWithId } from '../users/users.type';
 
-import { UsersRepository } from '../users/users-repositorySQL';
+import { UsersRepositoryQuery } from '../users/users-repositoryMongoQuery';
 type RequestWithUser = Request & { user: UsersDBTypeWithId };
 @Injectable()
 export class LoginFindDoublicate implements CanActivate {
-  constructor(protected usersRepository: UsersRepository) {}
+  constructor(protected usersRepositoryQuery: UsersRepositoryQuery) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req: RequestWithUser = context.switchToHttp().getRequest();
 
-    const mailFind = await this.usersRepository.FindUserLogin(req.body.login);
+    const mailFind = await this.usersRepositoryQuery.FindUserLogin(
+      req.body.login,
+    );
     if (mailFind) {
       throw new HttpException(
         { errorsMessages: [{ message: 'login is used', field: 'login' }] },

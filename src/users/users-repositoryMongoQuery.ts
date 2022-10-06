@@ -47,7 +47,7 @@ export class UsersRepositoryQuery {
 
   async userGetLogin(login: string): Promise<boolean> {
     const usersFind = await this.usersModel.find({ login: login }).lean();
-    console.log(usersFind);
+
     if (usersFind.length > 0) {
       return true;
     } else {
@@ -84,14 +84,6 @@ export class UsersRepositoryQuery {
       'accountData.email': email,
     });
     return user;
-  }
-
-  async refreshTokenSave(token: string) {
-    const result = await new this.tokenModel({
-      token: token,
-      _id: new ObjectId(),
-    }).save();
-    return true;
   }
 
   async refreshTokenFind(token: string): Promise<string | null> {

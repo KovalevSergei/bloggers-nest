@@ -10,13 +10,14 @@ import { Request } from 'express';
 import { JwtService } from '../application/jwt-service';
 import { UsersService } from '../users/users-service';
 import { UsersDBTypeWithId } from '../users/users.type';
+import { UsersRepositoryQuery } from '../users/users-repositoryMongoQuery';
 type RequestWithUser = Request & { user: UsersDBTypeWithId };
 
 @Injectable()
 export class Auth implements CanActivate {
   constructor(
     protected jwtService: JwtService,
-    protected usersService: UsersService,
+    protected usersRepositoryQuery: UsersRepositoryQuery,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     //| Promise<boolean> | Observable<boolean> {
@@ -30,7 +31,7 @@ export class Auth implements CanActivate {
     const userId = await this.jwtService.getUserIdByToken(token);
 
     if (userId) {
-      req.user = await this.usersService.findUserById(userId);
+      req.user = await this.usersRepositoryQuery.findUserById(userId);
 
       return true;
     }

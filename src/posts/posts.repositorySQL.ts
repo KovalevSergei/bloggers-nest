@@ -21,7 +21,7 @@ export class PostsRepository {
     @InjectModel(POSTS_COLLECTION)
     private likePostsModel: Model<likePostWithId>,
   ) {}
-  async getPosts(pageNumber: number, pageSize: number): Promise<postsreturn> {
+  /*   async getPosts(pageNumber: number, pageSize: number): Promise<postsreturn> {
     const posts = await this.postsModel
       .find({}, { projection: { _id: 0 } })
       .limit(pageSize)
@@ -32,7 +32,7 @@ export class PostsRepository {
       totalCount: totalCount,
       items: posts,
     };
-  }
+  } */
   async createPosts(postsnew: postsType): Promise<postsType> {
     const postsInstance = new this.postsModel();
     postsInstance.id = postsnew.id;
@@ -47,9 +47,9 @@ export class PostsRepository {
     await postsInstance.save();
     return postsnew;
   }
-  async getpostsId(id: string): Promise<postsType | null> {
+  /*  async getpostsId(id: string): Promise<postsType | null> {
     return this.postsModel.findOne({ id: id }, { projection: { _id: 0 } });
-  }
+  } */
   async updatePostsId(
     id: string,
     title: string,
@@ -73,7 +73,7 @@ export class PostsRepository {
     return result.deletedCount === 1;
   }
 
-  async getBloggersPost(
+  /*  async getBloggersPost(
     bloggerId: string,
     pageSize: number,
     pageNumber: number,
@@ -112,7 +112,7 @@ export class PostsRepository {
       totalCount: totalCount,
       items: items,
     };
-  }
+  } */
   async createLikeStatus(likePostForm: likePosts): Promise<boolean> {
     const likeInstance = new this.likePostsModel();
     likeInstance.postsId = likePostForm.postsId;

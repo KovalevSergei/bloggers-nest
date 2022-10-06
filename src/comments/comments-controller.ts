@@ -13,19 +13,14 @@ import {
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { Transform, TransformFnParams } from 'class-transformer';
-import { IsArray, IsIn, IsNotEmpty, Length } from 'class-validator';
-import { NotFoundError } from 'rxjs';
+import { IsIn, IsNotEmpty, Length } from 'class-validator';
 import { Auth } from '../guards/Auth';
-import { UserFind } from '../guards/userFind';
 import { UserId } from '../guards/userId';
 import { UsersDBTypeWithId } from '../users/users.type';
 import { CommentsRepositoryQuery } from './comments-repositoryMongoQuery';
 import { CommentsService } from './comments-service';
 import { DeleteCommentCommand } from './use-case/deleteCommentCommand';
-import {
-  UpdateCommentCommand,
-  UpdateCommentUseCase,
-} from './use-case/updateCommentCommand';
+import { UpdateCommentCommand } from './use-case/updateCommentCommand';
 import { UpdateLikeCommentsCommand } from './use-case/updateLikeCommentsCommand';
 type RequestWithUser = Request & { user: UsersDBTypeWithId };
 let status2 = ['None', 'Like', 'Dislike'];

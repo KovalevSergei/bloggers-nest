@@ -8,11 +8,11 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { UsersDBTypeWithId } from '../users/users.type';
-import { CommentsRepository } from '../comments/comments-repositorySQL';
+import { CommentsRepositoryQuery } from '../comments/comments-repositoryMongoQuery';
 type RequestWithUser = Request & { user: UsersDBTypeWithId };
 @Injectable()
 export class UserFind implements CanActivate {
-  constructor(protected commentRepository: CommentsRepository) {}
+  constructor(protected commentRepositoryQuery: CommentsRepositoryQuery) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req: RequestWithUser = context.switchToHttp().getRequest();
     const userId = req.user?.id;
@@ -21,7 +21,7 @@ export class UserFind implements CanActivate {
       throw new UnauthorizedException();
     }
 
-    const comment = await this.commentRepository.getComment(id);
+    const comment = await this.commentRepositoryQuery.getComment(id);
     if (!comment) {
       throw new NotFoundException();
     }

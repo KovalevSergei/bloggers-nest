@@ -54,9 +54,7 @@ export class Posts {
   likeposts: likePosts[]; //likeposts_posts
 
   @AfterInsert()
-  resetCounters() {
-    console.log('post create');
-  }
+  resetCounters() {}
 }
 @Entity()
 export class Users {

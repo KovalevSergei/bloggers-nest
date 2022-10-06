@@ -1,14 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UsersRepository } from '../users/users-repositorySQL';
-import { UsersDBType } from '../users/users.type';
 import { CommentsRepository } from './comments-repositorySQL';
-import {
-  commentDBTypePagination,
-  commentsDBPostIdType,
-  commentsDBType,
-  commentsDBType2,
-  likeComments,
-} from './comments.type';
 
 @Injectable()
 export class CommentsService {

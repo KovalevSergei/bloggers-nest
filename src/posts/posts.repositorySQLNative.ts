@@ -82,7 +82,7 @@ export class PostsRepository {
       WHERE posts.id=$1`,
       [id],
     );
-    console.log(res, '1');
+
     return res[0];
   }
   async updatePostsId(

@@ -1,6 +1,5 @@
-import { Injectable } from '@nestjs/common';
 import { CommandHandler, ICommand, ICommandHandler } from '@nestjs/cqrs';
-import { UsersRepositoryQuery } from 'src/users/users-repositoryMongoQuery';
+import { UsersRepositoryQuery } from '../../users/users-repositoryMongoQuery';
 import { UsersRepository } from '../../users/users-repositorySQL';
 import { UsersDBType } from '../../users/users.type';
 import { CommentsRepository } from '../comments-repositorySQL';

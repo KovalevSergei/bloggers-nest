@@ -22,7 +22,7 @@ async function bootstrap() {
             });
           });
         });
-        console.log(errrorsForResponse);
+
         throw new BadRequestException({ errorsMessages: errrorsForResponse });
       },
     }),

@@ -74,27 +74,23 @@ export class UsersService {
   // async deleteUserId(id: string): Promise<boolean> {
   //   return this.usersRepository.deleteUsersId(id);
   // }
-  async checkCredentials(
-    users: UsersDBTypeWithId,
-    login: string,
-    password: string,
-  ) {
-    const user = await this.usersRepository.FindUserLogin(login);
-    if (!user) return false;
-    const passwordHash = await this._generateHash(
-      password,
-      user.accountData.passwordSalt,
-    );
-    if (user.accountData.passwordHash !== passwordHash) {
-      return false;
-    }
-    return user;
-  }
-  async getUserByLogin(login: string) {
+  // async checkCredentials(login: string, password: string) {
+  //   const user = await this.usersRepository.FindUserLogin(login);
+  //   if (!user) return false;
+  //   const passwordHash = await this._generateHash(
+  //     password,
+  //     user.accountData.passwordSalt,
+  //   );
+  //   if (user.accountData.passwordHash !== passwordHash) {
+  //     return false;
+  //   }
+  //   return user;
+  // }
+  /*  async getUserByLogin(login: string) {
     return this.usersRepository.FindUserLogin(login);
-  }
+  } */
 
-  async findUserById(id: string): Promise<UsersDBTypeWithId | null> {
+  /*   async findUserById(id: string): Promise<UsersDBTypeWithId | null> {
     const result = await this.usersRepository.findUserById(id);
     return result;
   }
@@ -102,5 +98,5 @@ export class UsersService {
   async getUserById(id: string): Promise<UsersDBType | null> {
     const result = await this.usersRepository.getUserById(id);
     return result;
-  }
+  } */
 }

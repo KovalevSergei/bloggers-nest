@@ -56,7 +56,6 @@ export class UsersRepository {
   }
   async userGetLogin(login: string): Promise<boolean> {
     const usersFind = await this.usersModel.find({ login: login }).lean();
-    console.log(usersFind);
     if (usersFind.length > 0) {
       return true;
     } else {
