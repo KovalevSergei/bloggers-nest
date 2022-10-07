@@ -10,12 +10,13 @@ import {
   likeCommentsWithId,
 } from './comments.type';
 import { ObjectId } from 'mongodb';
-interface commentReturn {
+import { IRepositoryCommentsQuery } from './use-case/commentsRepository.interface';
+export interface commentReturn {
   items: commentsDBType[];
   totalCount: number;
 }
 @Injectable()
-export class CommentsRepositoryQuery {
+export class CommentsRepositoryQuery implements IRepositoryCommentsQuery {
   constructor(
     @InjectModel(COMMENTS_COLLECTION)
     private commentsModel: Model<commentsDBType>,

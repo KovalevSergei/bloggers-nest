@@ -5,12 +5,13 @@ import { TOKEN_COLLECTION, USERS_COLLECTION } from '../db';
 import { UsersDBType, UsersDBTypeWithId, usersGetDBType } from './users.type';
 import { ObjectId } from 'mongodb';
 import { RefreshToken, refreshToken } from '../authorization/auth-type';
+import { IRepositoryUsersQuery } from './usersRepository.interface';
 interface usersReturn {
   items: UsersDBType[];
   totalCount: number;
 }
 @Injectable()
-export class UsersRepositoryQuery {
+export class UsersRepositoryQuery implements IRepositoryUsersQuery {
   constructor(
     @InjectModel(USERS_COLLECTION)
     private usersModel: Model<UsersDBType>,
@@ -64,7 +65,7 @@ export class UsersRepositoryQuery {
     const usersFind = await this.usersModel.findOne({ id: id });
     return usersFind;
   }
-  async getUserById(id: string): Promise<UsersDBType | null> {
+  async getUserById(id: string): Promise<UsersDBTypeWithId | null> {
     const result = await this.usersModel.findOne(
       { id: id },
       { projection: { _id: 0 } },
@@ -72,14 +73,16 @@ export class UsersRepositoryQuery {
     return result;
   }
 
-  async findByConfirmationCode(code: string) {
+  async findByConfirmationCode(
+    code: string,
+  ): Promise<UsersDBTypeWithId | null> {
     const user = await this.usersModel.findOne({
       'emailConfirmation.confirmationCode': code,
     });
     return user;
   }
 
-  async findByEmail(email: string) {
+  async findByEmail(email: string): Promise<UsersDBTypeWithId | null> {
     const user = await this.usersModel.findOne({
       'accountData.email': email,
     });

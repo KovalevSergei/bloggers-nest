@@ -6,12 +6,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { postsType } from '../posts/posts.type';
 import { ObjectId } from 'mongodb';
 import { PostsService } from '../posts/posts.service';
+import { IRepositoryBloggers } from './bloggersRepository.interface';
 interface postsReturn {
   items: postsType[];
   totalCount: number;
 }
 @Injectable()
-export class BloggersRepository {
+export class BloggersRepository implements IRepositoryBloggers {
   constructor(
     @InjectModel(BLOGGERS_COLLECTION)
     private bloggersModel: Model<bloggersType>,

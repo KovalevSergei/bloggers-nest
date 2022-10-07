@@ -10,12 +10,13 @@ import {
   likeCommentsWithId,
 } from './comments.type';
 import { ObjectId } from 'mongodb';
+import { IRepositoryComments } from './use-case/commentsRepository.interface';
 interface commentReturn {
   items: commentsDBType[];
   totalCount: number;
 }
 @Injectable()
-export class CommentsRepository {
+export class CommentsRepository implements IRepositoryComments {
   constructor(
     @InjectModel(COMMENTS_COLLECTION)
     private commentsModel: Model<commentsDBType>,
@@ -46,12 +47,7 @@ export class CommentsRepository {
     );
     return a.modifiedCount === 1;
   }
-  async getComment(id: string): Promise<commentsDBType | null> {
-    return this.commentsModel.findOne(
-      { id: id },
-      { projection: { _id: 0, postId: 0 } },
-    );
-  }
+
   async deleteComment(id: string): Promise<boolean | null> {
     /*  const delComment = await commentsCollection.findOne({ id: id });
     if (delComment === null) {
@@ -74,23 +70,7 @@ export class CommentsRepository {
       addedAt: comment.addedAt,
     };
   }
-  async getCommentAll(
-    pageSize: number,
-    pageNumber: number,
-    postId: string,
-  ): Promise<commentReturn> {
-    const totalCount = await this.commentsModel.countDocuments({
-      postId: postId,
-    });
 
-    const items = await this.commentsModel
-      .find({ postId: postId }, { projection: { _id: 0, postId: 0 } })
-      .limit(pageSize)
-      .skip((pageNumber - 1) * pageSize)
-      .lean();
-
-    return { items: items, totalCount: totalCount };
-  }
   async createLikeStatus(likeCommentForm: likeComments): Promise<boolean> {
     const likeInstance = new this.likeCommentsModel();
     likeInstance.commentsId = likeCommentForm.commentsId;
@@ -101,17 +81,7 @@ export class CommentsRepository {
     await likeInstance.save();
     return true;
   }
-  async findLikeStatus(
-    commentsId: string,
-    userId: string,
-  ): Promise<likeCommentsWithId | null> {
-    const result = await this.likeCommentsModel.findOne({
-      commentsId: commentsId,
-      userId: userId,
-    });
 
-    return result;
-  }
   async deleteLike(commentsId: string, userId: string): Promise<boolean> {
     const result = await this.likeCommentsModel.findOne({
       commentsId: commentsId,
@@ -122,38 +92,5 @@ export class CommentsRepository {
     }
     await result.deleteOne();
     return true;
-  }
-  async getLikeStatus(
-    commentsId: string,
-    userId: string,
-  ): Promise<{
-    likesCount: number;
-    dislikesCount: number;
-    myStatus: string;
-  }> {
-    const result = { likesCount: 0, dislikesCount: 0, myStatus: 'None' };
-    const likesCount = await this.likeCommentsModel.countDocuments({
-      commentsId: commentsId,
-      myStatus: 'Like',
-    });
-    result.likesCount = likesCount;
-    const disLikes = await this.likeCommentsModel.countDocuments({
-      commentsId: commentsId,
-      myStatus: 'Dislike',
-    });
-    result.dislikesCount = disLikes;
-    const my = await this.likeCommentsModel.findOne({
-      commentsId: commentsId,
-      userId: userId,
-    });
-
-    if (!my) {
-      return result;
-    } else {
-      const a = my;
-      result.myStatus = a.myStatus;
-    }
-
-    return result;
   }
 }

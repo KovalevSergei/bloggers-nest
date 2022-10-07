@@ -9,12 +9,13 @@ import {
   postsType,
 } from './posts.type';
 import { ObjectId } from 'mongodb';
-interface postsReturn {
+import { IPostsRepositoryQuery } from './postsRepository.interface';
+export interface postsReturn {
   items: postsType[];
   totalCount: number;
 }
 @Injectable()
-export class PostsRepositoryQuery {
+export class PostsRepositoryQuery implements IPostsRepositoryQuery {
   constructor(
     @InjectModel(POSTS_COLLECTION)
     private postsModel: Model<postsType>,
@@ -75,7 +76,7 @@ export class PostsRepositoryQuery {
       items: items,
     };
   }
-  async getBloggersPost2(
+  /*   async getBloggersPost2(
     bloggerId: string,
     pageSize: number,
     pageNumber: number,
@@ -94,7 +95,7 @@ export class PostsRepositoryQuery {
       totalCount: totalCount,
       items: items,
     };
-  }
+  } */
 
   async getLikeStatus(
     postId: string,
@@ -151,28 +152,37 @@ export class PostsRepositoryQuery {
 
     return result;
   }
-  async getLikesBloggersPost(postsId: any): Promise<likePostWithId[]> {
-    const result = await this.likePostsModel.find({
-      myStatus: 'Like',
-      postsId: { $in: postsId },
-    });
-    return result;
-  }
-  async getDislikeBloggersPost(postsId: any): Promise<likePostWithId[]> {
-    const result = await this.likePostsModel.find({
-      myStatus: 'Dislike',
-      postsId: { $in: postsId },
-    });
-    return result;
-  }
+  // async getLikesBloggersPost(postsId: any): Promise<likePosts[]> {
+  //   const result = await this.likePostsModel.find(
+  //     {
+  //       myStatus: 'Like',
+  //       postsId: { $in: postsId },
+  //     },
+  //     { projection: { _id: 0 } },
+  //   );
+  //   return result;
+  // }
+  // async getDislikeBloggersPost(postsId: any): Promise<likePosts[]> {
+  //   const result = await this.likePostsModel.find(
+  //     {
+  //       myStatus: 'Dislike',
+  //       postsId: { $in: postsId },
+  //     },
+  //     { projection: { _id: 0 } },
+  //   );
+  //   return result;
+  // }
   async findLikeStatus(
     postId: string,
     userId: string,
-  ): Promise<likePostWithId | null> {
-    const result = await this.likePostsModel.findOne({
-      postsId: postId,
-      userId: userId,
-    });
+  ): Promise<likePosts | null> {
+    const result = await this.likePostsModel.findOne(
+      {
+        postsId: postId,
+        userId: userId,
+      },
+      { projection: { _id: 0 } },
+    );
     return result;
   }
 }

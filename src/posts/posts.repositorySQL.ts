@@ -9,12 +9,13 @@ import {
   postsType,
 } from './posts.type';
 import { ObjectId } from 'mongodb';
+import { IPostsRepository } from './postsRepository.interface';
 interface postsReturn {
   items: postsType[];
   totalCount: number;
 }
 @Injectable()
-export class PostsRepository {
+export class PostsRepository implements IPostsRepository {
   constructor(
     @InjectModel(POSTS_COLLECTION)
     private postsModel: Model<postsType>,
@@ -130,7 +131,7 @@ export class PostsRepository {
     });
     return true;
   }
-  async getLikeStatus(
+  /* async getLikeStatus(
     postId: string,
     userId: string,
   ): Promise<{
@@ -164,8 +165,8 @@ export class PostsRepository {
     }
 
     return result;
-  }
-  async getNewestLikes(postId: string): Promise<likePosts[]> {
+  } */
+  /*   async getNewestLikes(postId: string): Promise<likePosts[]> {
     const result2 = await this.likePostsModel
       .find({ postsId: postId, myStatus: 'Like' })
       .sort({ addedAt: -1 })
@@ -208,5 +209,5 @@ export class PostsRepository {
       userId: userId,
     });
     return result;
-  }
+  } */
 }
