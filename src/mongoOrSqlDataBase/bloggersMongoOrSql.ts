@@ -5,18 +5,30 @@ import { BloggersRepository } from '../bloggers/bloggersSQL.repository';
 import { BloggersRepositorySql } from '../bloggers/bloggersSQL.repository2';
 import { BloggersRepositoryNative } from '../bloggers/bloggersSQL.repositoryNative';
 
-const BloggersMongoOrSql = (env: string) => {
-  console.log(env, 'ENVdataBase');
+export const BloggersMongoOrSql = (env: string) => {
   switch (env) {
     case 'mongo': {
-      const a = [BloggersRepository, BloggersRepositoryQuery];
-      return a;
+      return BloggersRepository;
     }
     case 'sql': {
-      const a = [BloggersRepositorySql, BloggersRepositorySqlQuery];
+      return BloggersRepositorySql;
     }
     default: {
-      const a = [BloggersRepositoryNative, BloggersRepositoryNativeQuery];
+      return BloggersRepositoryNative;
+    }
+  }
+};
+
+export const BloggersMongoOrSqlQuery = (env: string) => {
+  switch (env) {
+    case 'mongo': {
+      return BloggersRepositoryQuery;
+    }
+    case 'sql': {
+      return BloggersRepositorySqlQuery;
+    }
+    default: {
+      return BloggersRepositoryNativeQuery;
     }
   }
 };

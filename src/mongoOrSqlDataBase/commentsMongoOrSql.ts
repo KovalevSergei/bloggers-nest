@@ -5,18 +5,32 @@ import { CommentsRepositorySql } from '../comments/comments-repositorySQL2';
 import { CommentsRepositoryNative } from '../comments/comments-repositorySQLNative';
 import { CommentsRepositorySqlQuery } from '../comments/comments-repositorySqlQuery';
 
-const CommentsMongoOrSql = (env: string) => {
+export const CommentsMongoOrSql = (env: string) => {
   console.log(env, 'ENVdataBase');
   switch (env) {
     case 'mongo': {
-      const a = [CommentsRepository, CommentsRepositoryQuery];
-      return a;
+      return CommentsRepository;
     }
     case 'sql': {
-      const a = [CommentsRepositorySql, CommentsRepositorySqlQuery];
+      return CommentsRepositorySql;
     }
     default: {
-      const a = [CommentsRepositoryNative, CommentsRepositoryNativeQuery];
+      return CommentsRepositoryNative;
+    }
+  }
+};
+
+export const CommentsMongoOrSqlQuery = (env: string) => {
+  console.log(env, 'ENVdataBase');
+  switch (env) {
+    case 'mongo': {
+      return CommentsRepositoryQuery;
+    }
+    case 'sql': {
+      return CommentsRepositorySqlQuery;
+    }
+    default: {
+      return CommentsRepositoryNativeQuery;
     }
   }
 };

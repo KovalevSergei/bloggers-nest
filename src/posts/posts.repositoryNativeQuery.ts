@@ -17,7 +17,7 @@ interface postsReturn {
 @Injectable()
 export class PostsRepositoryNativeQuery implements IPostsRepositoryQuery {
   postsModel: any;
-  constructor(@InjectDataSource() public dataSource: DataSource) {}
+  constructor(@InjectDataSource('Native') public dataSource: DataSource) {}
   async getPosts(pageNumber: number, pageSize: number): Promise<postsreturn> {
     /* const posts = await this.postsModel
       .find({}, { projection: { _id: 0 } })

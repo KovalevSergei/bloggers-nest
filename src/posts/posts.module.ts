@@ -45,6 +45,22 @@ import { getCommentPostUseCase } from './use-case/getCommentsPostUseCase';
 import { BloggersRepositoryQuery } from '../bloggers/bloggers.repositoryQueryMongo';
 import { CommentsRepositoryQuery } from '../comments/comments-repositoryMongoQuery';
 import { UsersRepositoryQuery } from '../users/users-repositoryMongoQuery';
+import {
+  UsersMongoOrSql,
+  UsersMongoOrSqlQuery,
+} from '../mongoOrSqlDataBase/usersMongoOrSql';
+import {
+  PostsMongoOrSql,
+  PostsMongoOrSqlQuery,
+} from '../mongoOrSqlDataBase/postsMongoOrSql';
+import {
+  BloggersMongoOrSql,
+  BloggersMongoOrSqlQuery,
+} from '../mongoOrSqlDataBase/bloggersMongoOrSql';
+import {
+  CommentsMongoOrSql,
+  CommentsMongoOrSqlQuery,
+} from '../mongoOrSqlDataBase/commentsMongoOrSql';
 const useCase = [
   CreatePostsUseCase,
   DeletePostsUseCase,
@@ -84,20 +100,43 @@ const useCase = [
   ],
   controllers: [PostsController],
   providers: [
+    {
+      provide: 'BloggersRepository',
+      useClass: BloggersMongoOrSql(process.env.REPOSITORY),
+    },
+    {
+      provide: 'BloggersRepositoryQuery',
+      useClass: BloggersMongoOrSqlQuery(process.env.REPOSITORY),
+    },
+    {
+      provide: 'PostsRepositorу',
+      useClass: PostsMongoOrSql(process.env.REPOSITORY),
+    },
+    {
+      provide: 'PostsRepositoryQuery',
+      useClass: PostsMongoOrSqlQuery(process.env.REPOSITORY),
+    },
+    {
+      provide: 'UsersRepositoryQuery',
+      useClass: UsersMongoOrSqlQuery(process.env.REPOSITORY),
+    },
+    {
+      provide: 'UsersRepository',
+      useClass: UsersMongoOrSql(process.env.REPOSITORY),
+    },
+    {
+      provide: 'CommentsRepositoryQuery',
+      useClass: CommentsMongoOrSqlQuery(process.env.REPOSITORY),
+    },
+    {
+      provide: 'CommentsRepository',
+      useClass: CommentsMongoOrSql(process.env.REPOSITORY),
+    },
     PostsService,
-    PostsRepositoryMongo,
-    BloggersMongooseRepository,
-    //BloggersSQLRepository,
-    CommentsRepository,
-    PostsRepositorySQL,
-    UsersRepositoryMongo,
-    // UsersRepositorySQL,
     JwtService,
-    PostsRepositoryQuery,
     UsersService,
-    BloggersRepositoryQuery,
     CommentsRepositoryQuery,
-    UsersRepositoryQuery,
+
     ...useCase,
   ],
 })

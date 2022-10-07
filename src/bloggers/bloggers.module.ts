@@ -34,6 +34,18 @@ import { CommandBus, CqrsModule } from '@nestjs/cqrs';
 import { GetBloggersPostUseCase } from './use-cases/getBloggersPostsUseCase';
 import { PostsRepositoryQuery } from '../posts/posts.repositoryMongoQuery';
 import { UsersRepositoryQuery } from '../users/users-repositoryMongoQuery';
+import {
+  BloggersMongoOrSql,
+  BloggersMongoOrSqlQuery,
+} from '../mongoOrSqlDataBase/bloggersMongoOrSql';
+import {
+  PostsMongoOrSql,
+  PostsMongoOrSqlQuery,
+} from '../mongoOrSqlDataBase/postsMongoOrSql';
+import {
+  UsersMongoOrSql,
+  UsersMongoOrSqlQuery,
+} from '../mongoOrSqlDataBase/usersMongoOrSql';
 
 const useCases = [
   CreateBloggersUseCase,
@@ -64,15 +76,33 @@ const useCases = [
   controllers: [BloggersController],
   providers: [
     BloggersService,
-    //BloggersSQLRepository,
-    BloggersMongooseRepository,
-    PostsRepository,
+    {
+      provide: 'BloggersRepository',
+      useClass: BloggersMongoOrSql(process.env.REPOSITORY),
+    },
+    {
+      provide: 'BloggersRepositoryQuery',
+      useClass: BloggersMongoOrSqlQuery(process.env.REPOSITORY),
+    },
+    {
+      provide: 'PostsRepositorу',
+      useClass: PostsMongoOrSql(process.env.REPOSITORY),
+    },
+    {
+      provide: 'PostsRepositoryQuery',
+      useClass: PostsMongoOrSqlQuery(process.env.REPOSITORY),
+    },
+    {
+      provide: 'UsersRepositoryQuery',
+      useClass: UsersMongoOrSqlQuery(process.env.REPOSITORY),
+    },
+    {
+      provide: 'UsersRepository',
+      useClass: UsersMongoOrSql(process.env.REPOSITORY),
+    },
+
     JwtService,
     UsersService,
-    UsersRepository,
-    BloggersRepositoryQuery,
-    PostsRepositoryQuery,
-    UsersRepositoryQuery,
     ...useCases,
   ],
   //exports: [BloggersRepository],

@@ -1,3 +1,4 @@
+import { usersReturn } from './users-repositorySqlQuery';
 import { UsersDBType, UsersDBTypeWithId, usersGetDBType } from './users.type';
 
 export interface IRepositoryUsers {
@@ -12,16 +13,23 @@ export interface IRepositoryUsers {
 }
 
 export interface IRepositoryUsersQuery {
-  getUsers: (PageSize: number, PageNumber: number) => Promise<usersGetDBType>;
+  getUsers: (
+    PageSize: number,
+    PageNumber: number,
+  ) => Promise<usersGetDBType | usersReturn>;
 
   userGetLogin: (login: string) => Promise<boolean>;
   FindUserLogin: (login: string) => Promise<UsersDBTypeWithId | null>;
   findUserById: (id: string) => Promise<UsersDBTypeWithId | null>;
   getUserById: (id: string) => Promise<UsersDBType | null>;
 
-  findByConfirmationCode: (code: string) => Promise<UsersDBTypeWithId | null>;
+  findByConfirmationCode: (
+    code: string,
+  ) => Promise<UsersDBTypeWithId | null | UsersDBType>;
 
-  findByEmail: (email: string) => Promise<UsersDBTypeWithId | null>;
+  findByEmail: (
+    email: string,
+  ) => Promise<UsersDBTypeWithId | null | UsersDBType>;
 
   refreshTokenFind: (token: string) => Promise<string | null>;
 }

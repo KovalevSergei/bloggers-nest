@@ -14,7 +14,7 @@ interface postsReturn {
 }
 @Injectable()
 export class BloggersRepositorySqlQuery implements IRepositoryBloggersQuery {
-  constructor(@InjectDataSource() public dataSource: DataSource) {}
+  constructor(@InjectDataSource('ORM') public dataSource: DataSource) {}
 
   async getBloggers(
     pageSize: number,

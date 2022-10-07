@@ -26,6 +26,11 @@ import { CommentsService } from './comments-service';
 import { DeleteCommentUseCase } from './use-case/deleteCommentCommand';
 import { UpdateCommentUseCase } from './use-case/updateCommentCommand';
 import { UpdateLikeCommentsUseCase } from './use-case/updateLikeCommentsCommand';
+import {
+  CommentsMongoOrSql,
+  CommentsMongoOrSqlQuery,
+} from '../mongoOrSqlDataBase/commentsMongoOrSql';
+import { UsersMongoOrSqlQuery } from '../mongoOrSqlDataBase/usersMongoOrSql';
 const useCase = [
   UpdateCommentUseCase,
   DeleteCommentUseCase,
@@ -51,13 +56,23 @@ const useCase = [
   ],
   controllers: [CommentsController],
   providers: [
+    {
+      provide: 'UsersRepositoryQuery',
+      useClass: UsersMongoOrSqlQuery(process.env.REPOSITORY),
+    },
+
+    {
+      provide: 'CommentsRepositoryQuery',
+      useClass: CommentsMongoOrSqlQuery(process.env.REPOSITORY),
+    },
+    {
+      provide: 'CommentsRepository',
+      useClass: CommentsMongoOrSql(process.env.REPOSITORY),
+    },
     CommentsService,
-    CommentsRepository,
     UsersRepository,
     JwtService,
     UsersService,
-    CommentsRepositoryQuery,
-    UsersRepositoryQuery,
     ...useCase,
   ],
   //exports: [],

@@ -20,7 +20,7 @@ interface commentReturn {
 }
 @Injectable()
 export class CommentsRepositorySqlQuery implements IRepositoryCommentsQuery {
-  constructor(@InjectDataSource() public dataSource: DataSource) {}
+  constructor(@InjectDataSource('ORM') public dataSource: DataSource) {}
 
   async getComment(id: string): Promise<commentsDBType | null> {
     const result = await this.dataSource

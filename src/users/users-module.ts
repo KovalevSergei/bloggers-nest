@@ -9,6 +9,10 @@ import {
   USERS_COLLECTION,
 } from '../db';
 import { Token, Users } from '../db.sql';
+import {
+  UsersMongoOrSql,
+  UsersMongoOrSqlQuery,
+} from '../mongoOrSqlDataBase/usersMongoOrSql';
 import { CreateUserUseCase } from './use-case/createUserUseCase';
 import { DeleteUserUseCase } from './use-case/deleteUserUseCase';
 //import { Token, Users } from '../db.sql';
@@ -32,9 +36,17 @@ const useCase = [CreateUserUseCase, DeleteUserUseCase];
   ],
   controllers: [UsersController],
   providers: [
+    {
+      provide: 'UsersRepositoryQuery',
+      useClass: UsersMongoOrSqlQuery(process.env.REPOSITORY),
+    },
+    {
+      provide: 'UsersRepository',
+      useClass: UsersMongoOrSql(process.env.REPOSITORY),
+    },
+
     UsersService,
-    UsersRepositoryMongo,
-    UsersRepositoryQuery,
+
     ...useCase,
   ],
   exports: [],

@@ -11,7 +11,7 @@ interface postsReturn {
 }
 @Injectable()
 export class BloggersRepositorySql implements IRepositoryBloggers {
-  constructor(@InjectDataSource() public dataSource: DataSource) {}
+  constructor(@InjectDataSource('ORM') public dataSource: DataSource) {}
 
   async createBloggers(bloggersnew: bloggersType): Promise<bloggersType> {
     await this.dataSource

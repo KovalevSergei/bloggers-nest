@@ -12,7 +12,7 @@ interface postsReturn {
 @Injectable()
 export class PostsRepositorySqlQuery implements IPostsRepositoryQuery {
   postsModel: any;
-  constructor(@InjectDataSource() public dataSource: DataSource) {}
+  constructor(@InjectDataSource('ORM') public dataSource: DataSource) {}
   async getPosts(pageNumber: number, pageSize: number): Promise<postsreturn> {
     const posts = await this.dataSource
       .getRepository(Posts)

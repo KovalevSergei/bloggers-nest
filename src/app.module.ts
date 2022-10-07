@@ -20,13 +20,28 @@ import {
   Token,
   Users,
 } from './db.sql';
+import { configForSwitch } from './mongoOrSqlDataBase/config.forswitch';
 import { PostsModule } from './posts/posts.module';
 import { UsersModule } from './users/users-module';
 
 @Module({
   imports: [
-    //CqrsModule,
-    /*  TypeOrmModule.forRoot({
+    configForSwitch,
+    TypeOrmModule.forRoot({
+      name: 'Native',
+      type: 'postgres',
+      host: 'localhost',
+      port: 5432,
+      username: 'postgres',
+      password: '123',
+      database: 'postgres2',
+      entities: [],
+      autoLoadEntities: false,
+      synchronize: false,
+      //  logging: ['query'],
+    }),
+    TypeOrmModule.forRoot({
+      name: 'ORM',
       type: 'postgres',
       host: 'localhost',
       port: 5432,
@@ -44,7 +59,7 @@ import { UsersModule } from './users/users-module';
       ],
       synchronize: false,
       //  logging: ['query'],
-    }), */
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
     }),

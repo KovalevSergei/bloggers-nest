@@ -17,7 +17,7 @@ interface commentReturn {
 }
 @Injectable()
 export class CommentsRepositorySql implements IRepositoryComments {
-  constructor(@InjectDataSource() public dataSource: DataSource) {}
+  constructor(@InjectDataSource('ORM') public dataSource: DataSource) {}
   async updateComment(
     content: string,
     commentId: string,

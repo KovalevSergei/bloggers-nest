@@ -13,7 +13,7 @@ interface postsReturn {
 }
 @Injectable()
 export class BloggersRepositoryNativeQuery implements IRepositoryBloggersQuery {
-  constructor(@InjectDataSource() public dataSource: DataSource) {}
+  constructor(@InjectDataSource('Native') public dataSource: DataSource) {}
 
   async getBloggers(
     pageSize: number,
