@@ -4,10 +4,6 @@ import { CommentsRepository } from './comments-repositorySQL';
 
 @Injectable()
 export class CommentsService {
-  constructor(
-    protected commentsRepository: CommentsRepository,
-    protected usersRepository: UsersRepository,
-  ) {}
   // async updateContent(
   //   content: string,
   //   commentId: string,
@@ -28,7 +24,6 @@ export class CommentsService {
     const isdelete = await this.commentsRepository.deleteComment(id);
     return isdelete;
   } */
-
   /*   async getCommentsPost(
     pageSize: number,
     pageNumber: number,

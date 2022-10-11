@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommand, ICommandHandler } from '@nestjs/cqrs';
+import { IRepositoryBloggers } from '../bloggersRepository.interface';
 import { BloggersRepository } from '../bloggersSQL.repository';
 export class UpdateBloggersCommand {
   constructor(
@@ -12,7 +13,10 @@ export class UpdateBloggersCommand {
 export class UpdateBloggersUseCase
   implements ICommandHandler<UpdateBloggersCommand>
 {
-  constructor(protected bloggersRepository: BloggersRepository) {}
+  constructor(
+    @Inject('BloggersRepository')
+    protected bloggersRepository: IRepositoryBloggers,
+  ) {}
 
   async execute(command: UpdateBloggersCommand): Promise<boolean> {
     return await this.bloggersRepository.updateBloggers(

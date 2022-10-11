@@ -5,14 +5,18 @@ import {
   UnauthorizedException,
   NotFoundException,
   ForbiddenException,
+  Inject,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { UsersDBTypeWithId } from '../users/users.type';
-import { CommentsRepositoryQuery } from '../comments/comments-repositoryMongoQuery';
+import { IRepositoryCommentsQuery } from '../comments/use-case/commentsRepository.interface';
 type RequestWithUser = Request & { user: UsersDBTypeWithId };
 @Injectable()
 export class UserFind implements CanActivate {
-  constructor(protected commentRepositoryQuery: CommentsRepositoryQuery) {}
+  constructor(
+    @Inject('CommentsRepositoryQuery')
+    protected commentRepositoryQuery: IRepositoryCommentsQuery,
+  ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req: RequestWithUser = context.switchToHttp().getRequest();
     const userId = req.user?.id;

@@ -7,8 +7,6 @@ import { UsersService } from '../users/users-service';
 @Injectable()
 export class AuthService {
   constructor(
-    protected usersRepository: UsersRepository,
-    protected usersService: UsersService,
     protected jwtService: JwtService,
     protected emailAdapter: EmailAdapter,
   ) {}

@@ -1,7 +1,13 @@
+import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { InjectConnection } from '@nestjs/mongoose';
 import { UsersRepositoryQuery } from '../../users/users-repositoryMongoQuery';
 import { UsersRepository } from '../../users/users-repositorySQL';
 import { UsersService } from '../../users/users-service';
+import {
+  IRepositoryUsers,
+  IRepositoryUsersQuery,
+} from '../../users/usersRepository.interface';
 
 export class ConfirmCodeCommand {
   constructor(public code: string, public password: string) {}
@@ -9,9 +15,9 @@ export class ConfirmCodeCommand {
 @CommandHandler(ConfirmCodeCommand)
 export class ConfirmCodeUseCase implements ICommandHandler<ConfirmCodeCommand> {
   constructor(
-    protected usersRepository: UsersRepository,
-    protected usersRepositoryQuery: UsersRepositoryQuery,
-    protected usersService: UsersService,
+    @Inject('UsersRepository') protected usersRepository: IRepositoryUsers,
+    @Inject('UsersRepositoryQuery')
+    protected usersRepositoryQuery: IRepositoryUsersQuery,
   ) {}
   async execute(command: ConfirmCodeCommand): Promise<boolean> {
     let user = await this.usersRepositoryQuery.findByConfirmationCode(

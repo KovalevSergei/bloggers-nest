@@ -5,6 +5,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  Inject,
   NotFoundException,
   Param,
   Post,
@@ -33,6 +34,9 @@ import { GetPostCommand } from './use-case/getPostsUseCese';
 import { PostsRepositoryQuery } from './posts.repositoryMongoQuery';
 import { CommentsRepositoryQuery } from '../comments/comments-repositoryMongoQuery';
 import { getCommentPostCommand } from './use-case/getCommentsPostUseCase';
+import { InjectConnection } from '@nestjs/mongoose';
+import { IPostsRepositoryQuery } from './postsRepository.interface';
+import { IRepositoryCommentsQuery } from '../comments/use-case/commentsRepository.interface';
 let status = ['None', 'Like', 'Dislike'];
 type RequestWithUser = Request & { user: UsersDBTypeWithId };
 class likeStatus {
@@ -74,8 +78,10 @@ class CommentsUpdate {
 export class PostsController {
   constructor(
     protected postsService: PostsService, //protected commentsServise: CommentsService,
-    protected postsRepositoryQuery: PostsRepositoryQuery,
-    protected commantsRepositoryQuery: CommentsRepositoryQuery,
+    @Inject('PostsRepositoryQuery')
+    protected postsRepositoryQuery: IPostsRepositoryQuery,
+    @Inject('CommentsRepositoryQuery')
+    protected commantsRepositoryQuery: IRepositoryCommentsQuery,
     public commandBus: CommandBus,
   ) {}
   @UseGuards(UserId)

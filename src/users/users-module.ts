@@ -25,8 +25,8 @@ const useCase = [CreateUserUseCase, DeleteUserUseCase];
 @Module({
   imports: [
     CqrsModule,
-    //TypeOrmModule.forFeature([Users]),
-    // TypeOrmModule.forFeature([Token]),
+    TypeOrmModule.forFeature([Users, Token], 'ORM'),
+    TypeOrmModule.forFeature([], 'Native'),
     MongooseModule.forFeature([
       { name: USERS_COLLECTION, schema: usersSchema },
     ]),

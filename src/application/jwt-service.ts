@@ -2,10 +2,13 @@ import { UsersDBType } from '../users/users.type';
 import * as jwt from 'jsonwebtoken';
 import { settings } from '../setting';
 import { UsersRepository } from '../users/users-repositorySQL';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { IRepositoryUsers } from '../users/usersRepository.interface';
 @Injectable()
 export class JwtService {
-  constructor(protected usersRepository: UsersRepository) {}
+  constructor(
+    @Inject('UsersRepository') protected usersRepository: IRepositoryUsers,
+  ) {}
   async createJWT(user: UsersDBType) {
     const token = jwt.sign({ userId: user.id }, settings.JWT_SECRET, {
       expiresIn: '66660000000s',

@@ -4,6 +4,12 @@ import { v4 as uuidv4 } from 'uuid';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersRepositoryQuery } from '../../users/users-repositoryMongoQuery';
 import { UsersService } from '../../users/users-service';
+import { InjectConnection } from '@nestjs/mongoose';
+import { Inject } from '@nestjs/common';
+import {
+  IRepositoryUsers,
+  IRepositoryUsersQuery,
+} from '../../users/usersRepository.interface';
 export class ConfirmEmailCommand {
   constructor(public email: string) {}
 }
@@ -13,9 +19,10 @@ export class ConfirmEmailCommandUseCase
   implements ICommandHandler<ConfirmEmailCommand>
 {
   constructor(
-    protected usersRepositoryQuery: UsersRepositoryQuery,
-    protected usersRepository: UsersRepository,
-    protected usersService: UsersService,
+    @Inject('UsersRepositoryQuery')
+    protected usersRepositoryQuery: IRepositoryUsersQuery,
+    @Inject('UsersRepository') protected usersRepository: IRepositoryUsers,
+
     protected emailAdapter: EmailAdapter,
   ) {}
 

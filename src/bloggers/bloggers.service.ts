@@ -6,10 +6,6 @@ import { bloggersDBType, bloggersType } from './bloggers.type';
 
 @Injectable()
 export class BloggersService {
-  constructor(
-    protected bloggersRepository: BloggersRepository,
-    protected postsRepository: PostsRepository, //protected postsService: PostsService,
-  ) {}
   /*  async getBloggers(
     pageSize: number,
     pageNumber: number,
@@ -45,9 +41,7 @@ export class BloggersService {
   //     name: name,
   //     youtubeUrl: youtubeUrl,
   //   };
-
   //   const result = this.bloggersRepository.createBloggers(bloggersnew);
-
   //   return result;
   // }
   /*  async getBloggersById(id: string): Promise<bloggersType | null> {
@@ -80,7 +74,6 @@ export class BloggersService {
   //   content: string,
   // ): Promise<postsType | boolean> {
   //   const findName = await this.bloggersRepository.getBloggersById(bloggerId);
-
   //   if (!findName) {
   //     return false;
   //   } else {
@@ -93,13 +86,10 @@ export class BloggersService {
   //       bloggerName: findName.name,
   //       addedAt: new Date(),
   //     };
-
   //     const result = await this.postsRepository.createPosts(postsnew);
-
   //     return result;
   //   }
   // }
-
   //   async getBloggersPost(
   //     bloggerId: string,
   //     pageSize: number,
@@ -111,17 +101,13 @@ export class BloggersService {
   //       pageSize,
   //       pageNumber,
   //     );
-
   //     /*    const postIds = items.map(p => p.id)
   // const likes= await this.postsRepository.getLikesBloggersPost(postIds)
   // const dislikes=await this.postsRepository.getDislikeBloggersPost(postIds)
   //     items.forEach(p => {
   //       const postLikes = likes.filter(l => l.postId === p.id)
-
   //     }) */
-
   //     const items2 = [];
-
   //     if (totalCount === 0) {
   //       return false;
   //     } else {

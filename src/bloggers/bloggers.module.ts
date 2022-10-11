@@ -5,8 +5,6 @@ import { JwtService } from '../application/jwt-service';
 import {
   bloggersSchema,
   BLOGGERS_COLLECTION,
-  ipSchema,
-  IP_MODEL,
   postsSchema,
   POSTS_COLLECTION,
   tokenSchema,
@@ -14,26 +12,19 @@ import {
   usersSchema,
   USERS_COLLECTION,
 } from '../db';
-
-import { PostsRepository } from '../posts/posts.repositorySQL';
-import { UsersModule } from '../users/users-module';
-import { UsersRepository } from '../users/users-repositorySQL';
 import { UsersService } from '../users/users-service';
 
 import { BloggersController } from './bloggers.controller';
-import { BloggersRepository as BloggersMongooseRepository } from './bloggersSQL.repository';
+
 //import { BloggersRepository as BloggersSQLRepository } from './bloggersSQL.repository';
 import { BloggersService } from './bloggers.service';
-import { Bloggers } from '../db.sql';
+import { Bloggers, Posts, Users } from '../db.sql';
 import { CreateBloggersUseCase } from './use-cases/createBloggerUseCase';
 import { UpdateBloggersUseCase } from './use-cases/updateBloggerUseCase';
 import { CreateBloggersPostUseCase } from './use-cases/createBloggerPostUseCase';
 import { DeleteBloggersByIdUseCase } from './use-cases/deleteBloggersByIdUseCase';
-import { BloggersRepositoryQuery } from './bloggers.repositoryQueryMongo';
-import { CommandBus, CqrsModule } from '@nestjs/cqrs';
+import { CqrsModule } from '@nestjs/cqrs';
 import { GetBloggersPostUseCase } from './use-cases/getBloggersPostsUseCase';
-import { PostsRepositoryQuery } from '../posts/posts.repositoryMongoQuery';
-import { UsersRepositoryQuery } from '../users/users-repositoryMongoQuery';
 import {
   BloggersMongoOrSql,
   BloggersMongoOrSqlQuery,
@@ -62,7 +53,8 @@ const useCases = [
     MongooseModule.forFeature([
       { name: BLOGGERS_COLLECTION, schema: bloggersSchema },
     ]),
-    //TypeOrmModule.forFeature([Bloggers]),
+    TypeOrmModule.forFeature([Bloggers, Posts, Users], 'ORM'),
+    TypeOrmModule.forFeature([], 'Native'),
     MongooseModule.forFeature([
       { name: POSTS_COLLECTION, schema: postsSchema },
     ]),

@@ -6,7 +6,6 @@ import { CommentsRepositoryNative } from '../comments/comments-repositorySQLNati
 import { CommentsRepositorySqlQuery } from '../comments/comments-repositorySqlQuery';
 
 export const CommentsMongoOrSql = (env: string) => {
-  console.log(env, 'ENVdataBase');
   switch (env) {
     case 'mongo': {
       return CommentsRepository;
@@ -21,7 +20,6 @@ export const CommentsMongoOrSql = (env: string) => {
 };
 
 export const CommentsMongoOrSqlQuery = (env: string) => {
-  console.log(env, 'ENVdataBase');
   switch (env) {
     case 'mongo': {
       return CommentsRepositoryQuery;

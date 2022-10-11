@@ -14,7 +14,7 @@ import {
   usersSchema,
   USERS_COLLECTION,
 } from '../db';
-import { Comments, LikeComments } from '../db.sql';
+import { Comments, LikeComments, Users } from '../db.sql';
 //import { Comments, LikeComments, Users } from 'src/db.sql';
 import { UsersRepository } from '../users/users-repositorySQL';
 import { UsersService } from '../users/users-service';
@@ -39,8 +39,8 @@ const useCase = [
 @Module({
   imports: [
     CqrsModule,
-    //TypeOrmModule.forFeature([Comments]),
-    // TypeOrmModule.forFeature([LikeComments]),
+    TypeOrmModule.forFeature([], 'Native'),
+    TypeOrmModule.forFeature([LikeComments, Comments, Users], 'ORM'),
     MongooseModule.forFeature([
       { name: COMMENTS_COLLECTION, schema: commentsSchema },
     ]),
@@ -58,6 +58,10 @@ const useCase = [
   providers: [
     {
       provide: 'UsersRepositoryQuery',
+      useClass: UsersMongoOrSqlQuery(process.env.REPOSITORY),
+    },
+    {
+      provide: 'UsersRepository',
       useClass: UsersMongoOrSqlQuery(process.env.REPOSITORY),
     },
 

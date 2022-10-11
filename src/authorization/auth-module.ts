@@ -22,7 +22,7 @@ import { ConfirmEmailCommandUseCase } from './use-case/confirmEmailCommand';
 import { ConfirmCodeUseCase } from './use-case/confirmCode2Command';
 import { RefreshTokenFindUseCase } from './use-case/refreshTokenFinCommand';
 import { RefreshTokenKillUseCase } from './use-case/refreshTokenKillCommand';
-import { UsersRepositoryQuery } from '../users/users-repositoryMongoQuery';
+import { UsersMongoOrSqlQuery } from '../mongoOrSqlDataBase/usersMongoOrSql';
 
 const useCase = [
   CreateUserUseCase,
@@ -46,12 +46,19 @@ const useCase = [
   ],
   controllers: [AuthController],
   providers: [
+    {
+      provide: 'UsersRepositoryQuery',
+      useClass: UsersMongoOrSqlQuery(process.env.REPOSITORY),
+    },
+    {
+      provide: 'UsersRepository',
+      useClass: UsersMongoOrSqlQuery(process.env.REPOSITORY),
+    },
+
     AuthService,
     JwtService,
-    UsersRepository,
     UsersService,
     EmailAdapter,
-    UsersRepositoryQuery,
     ...useCase,
     //CommandBus,
   ],

@@ -1,15 +1,21 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  Inject,
+} from '@nestjs/common';
 import { Request } from 'express';
 import { UsersDBTypeWithId } from '../users/users.type';
 import { JwtService } from '../application/jwt-service';
-import { UsersService } from '../users/users-service';
 import { UsersRepositoryQuery } from '../users/users-repositoryMongoQuery';
+import { IRepositoryUsersQuery } from '../users/usersRepository.interface';
 type RequestWithUser = Request & { user: UsersDBTypeWithId };
 @Injectable()
 export class UserId implements CanActivate {
   constructor(
     protected jwtService: JwtService,
-    protected usersRepositoryQuery: UsersRepositoryQuery,
+    @Inject('UsersRepositoryQuery')
+    protected usersRepositoryQuery: IRepositoryUsersQuery,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req: RequestWithUser = context.switchToHttp().getRequest();

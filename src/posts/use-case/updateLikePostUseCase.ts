@@ -1,22 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { BloggersRepository } from '../../bloggers/bloggersSQL.repository';
-import { CommentsRepository } from '../../comments/comments-repositorySQL';
-import {
-  commentDBTypePagination,
-  commentsDBPostIdType,
-  commentsDBType2,
-} from 'src/comments/comments.type';
-import { Posts } from '../../db.sql';
-import { UsersRepository } from '../../users/users-repositorySQL';
+import { Inject } from '@nestjs/common';
 import { UsersDBType } from '../../users/users.type';
-import { PostsRepository } from '../posts.repositorySQL';
-import {
-  likePosts,
-  likePostWithId,
-  postsDBType,
-  postsType,
-} from '../posts.type';
+import { likePosts } from '../posts.type';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { IRepositoryUsersQuery } from '../../users/usersRepository.interface';
+import {
+  IPostsRepository,
+  IPostsRepositoryQuery,
+} from '../postsRepository.interface';
 export class UpdateLikePostCommand {
   constructor(
     public postId: string,
@@ -29,17 +19,20 @@ export class UpdateLikePostUseCase
   implements ICommandHandler<UpdateLikePostCommand>
 {
   constructor(
-    protected postsRepository: PostsRepository,
-    protected usersRepository: UsersRepository,
+    @Inject('PostsRepositorу') protected postsRepository: IPostsRepository,
+    @Inject('PostsRepositoryQuery')
+    protected postsRepositoryQuery: IPostsRepositoryQuery,
+    @Inject('UsersRepositoryQuery')
+    protected usersRepositoryQuery: IRepositoryUsersQuery,
   ) {}
   //protected usersRepository: UsersRepository){}
 
   async execute(command: UpdateLikePostCommand): Promise<boolean> {
-    const findLike = await this.postsRepository.findLikeStatus(
+    const findLike = await this.postsRepositoryQuery.findLikeStatus(
       command.postId,
       command.userId,
     );
-    const login = await this.usersRepository.getUserById(command.userId);
+    const login = await this.usersRepositoryQuery.getUserById(command.userId);
     const login2 = login as UsersDBType;
     if (!findLike && command.status != 'None') {
       const likePostForm = new likePosts(
@@ -52,16 +45,16 @@ export class UpdateLikePostUseCase
       const result = await this.postsRepository.createLikeStatus(likePostForm);
       return true;
     }
-    if (findLike && status === 'None') {
+    if (findLike && command.status === 'None') {
       await this.postsRepository.deleteLike(command.postId, command.userId);
       return true;
     }
 
-    if (findLike?.myStatus === status) {
+    if (findLike?.myStatus === command.status) {
       return true;
     } else {
       await this.postsRepository.deleteLike(command.postId, command.userId);
-      const login = await this.usersRepository.getUserById(command.userId);
+      const login = await this.usersRepositoryQuery.getUserById(command.userId);
       const login2 = login as UsersDBType;
       const likePostForm = new likePosts(
         command.postId,

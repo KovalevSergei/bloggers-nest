@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   CommandHandler,
   ICommand,
@@ -11,6 +11,7 @@ import { BloggersRepository } from '../bloggersSQL.repository';
 import { postsType } from '../../posts/posts.type';
 import { PostsRepository } from '../../posts/posts.repositorySQL';
 import { PostsRepositoryQuery } from '../../posts/posts.repositoryMongoQuery';
+import { IPostsRepositoryQuery } from '../../posts/postsRepository.interface';
 export class GetBloggerPostQuery {
   constructor(
     public bloggerId: string,
@@ -24,8 +25,8 @@ export class GetBloggersPostUseCase
   implements IQueryHandler<GetBloggerPostQuery>
 {
   constructor(
-    protected bloggersRepository: BloggersRepository,
-    protected postsRepositoryQuery: PostsRepositoryQuery,
+    @Inject('PostsRepositoryQuery')
+    protected postsRepositoryQuery: IPostsRepositoryQuery,
   ) {}
 
   async execute(

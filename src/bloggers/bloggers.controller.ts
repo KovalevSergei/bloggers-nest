@@ -5,6 +5,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  Inject,
   NotFoundException,
   Param,
   Post,
@@ -14,6 +15,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { InjectConnection } from '@nestjs/mongoose';
 import { Transform, TransformFnParams } from 'class-transformer';
 import { IsNotEmpty, IsString, IsUrl, Length } from 'class-validator';
 import { AuthBasic } from '../guards/authBasic.guards';
@@ -22,6 +24,7 @@ import { postsType } from '../posts/posts.type';
 import { UsersDBTypeWithId } from '../users/users.type';
 import { BloggersRepositoryQuery } from './bloggers.repositoryQueryMongo';
 import { BloggersService } from './bloggers.service';
+import { IRepositoryBloggersQuery } from './bloggersRepository.interface';
 import { CreateBloggersPostCommand } from './use-cases/createBloggerPostUseCase';
 import { CreateBloggerCommand } from './use-cases/createBloggerUseCase';
 import { DeleteBloggerCommand } from './use-cases/deleteBloggersByIdUseCase';
@@ -56,7 +59,8 @@ class UpdateBloggers {
 export class BloggersController {
   constructor(
     protected bloggersService: BloggersService,
-    protected bloggersRepositoryQuery: BloggersRepositoryQuery,
+    @Inject('BloggersRepositoryQuery')
+    protected bloggersRepositoryQuery: IRepositoryBloggersQuery,
     private commandBus: CommandBus,
     private queryBus: QueryBus,
   ) {}

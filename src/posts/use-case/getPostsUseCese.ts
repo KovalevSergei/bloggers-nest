@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { BloggersRepository } from '../../bloggers/bloggersSQL.repository';
 import { CommentsRepository } from '../../comments/comments-repositorySQL';
 
@@ -16,9 +16,8 @@ export class GetPostCommand {
 @CommandHandler(GetPostCommand)
 export class GetPostUseCase implements ICommandHandler<GetPostCommand> {
   constructor(
+    @Inject('PostsRepositoryQuery')
     protected postsRepositoryQuery: PostsRepositoryQuery,
-    protected bloggersRepository: BloggersRepository,
-    protected commentsRepository: CommentsRepository,
   ) {}
   //protected usersRepository: UsersRepository){}
 

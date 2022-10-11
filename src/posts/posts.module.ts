@@ -24,7 +24,14 @@ import {
   usersSchema,
   USERS_COLLECTION,
 } from '../db';
-import { Bloggers, LikePosts, Posts } from 'src/db.sql';
+import {
+  Bloggers,
+  LikeComments,
+  LikePosts,
+  Posts,
+  Token,
+  Users,
+} from 'src/db.sql';
 //import { Bloggers, LikePosts, Posts } from 'src/db.sql';
 import { UsersRepository as UsersRepositoryMongo } from '../users/users-repositorySQL';
 //import { UsersRepository as UsersRepositorySQL } from 'src/users/users-repositorySQL';
@@ -76,9 +83,12 @@ const useCase = [
     MongooseModule.forFeature([
       { name: POSTS_COLLECTION, schema: postsSchema },
     ]),
-    //TypeOrmModule.forFeature([Posts]),
-    // TypeOrmModule.forFeature([Bloggers]),
-    //TypeOrmModule.forFeature([LikePosts]),
+    TypeOrmModule.forFeature(
+      [Posts, Bloggers, LikePosts, Token, Users, LikeComments],
+      'ORM',
+    ),
+    TypeOrmModule.forFeature([], 'Native'),
+
     MongooseModule.forFeature([
       { name: LIKE_POSTS_COLLECTION, schema: likePostsShema },
     ]),

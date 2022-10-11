@@ -2,6 +2,8 @@ import { BloggersRepository } from '../../bloggers/bloggersSQL.repository';
 import { PostsRepository } from '../posts.repositorySQL';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BloggersRepositoryQuery } from '../../bloggers/bloggers.repositoryQueryMongo';
+import { InjectConnection } from '@nestjs/mongoose';
+import { Inject } from '@nestjs/common';
 export class UpdatePostCommand {
   constructor(
     public id: string,
@@ -14,8 +16,8 @@ export class UpdatePostCommand {
 @CommandHandler(UpdatePostCommand)
 export class UpdatePostsUseCase implements ICommandHandler<UpdatePostCommand> {
   constructor(
-    protected postsRepository: PostsRepository,
-    protected bloggersRepository: BloggersRepository,
+    @Inject('PostsRepositorу') protected postsRepository: PostsRepository,
+    @Inject('BloggersRepositoryQuery')
     protected bloggersRepositoryQuery: BloggersRepositoryQuery,
   ) {}
   //protected usersRepository: UsersRepository){}

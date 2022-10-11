@@ -1,6 +1,9 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersService } from '../users-service';
 import { UsersRepositoryQuery } from '../users-repositoryMongoQuery';
+import { InjectConnection } from '@nestjs/mongoose';
+import { Inject } from '@nestjs/common';
+import { IRepositoryUsersQuery } from '../usersRepository.interface';
 export class ChechCredentialCommand {
   constructor(public login: string, public password: string) {}
 }
@@ -9,7 +12,8 @@ export class CheckCredentialUseCase
   implements ICommandHandler<ChechCredentialCommand>
 {
   constructor(
-    protected usersRepository: UsersRepositoryQuery,
+    @Inject('UsersRepositoryQuery')
+    protected usersRepository: IRepositoryUsersQuery,
     protected usersService: UsersService,
   ) {}
   async execute(command: ChechCredentialCommand) {

@@ -3,6 +3,8 @@ import { PostsRepository } from '../posts.repositorySQL';
 import { postsType } from '../posts.type';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BloggersRepositoryQuery } from '../../bloggers/bloggers.repositoryQueryMongo';
+import { InjectConnection } from '@nestjs/mongoose';
+import { Inject } from '@nestjs/common';
 export class CreatePostsCommand {
   constructor(
     public title: string,
@@ -14,8 +16,8 @@ export class CreatePostsCommand {
 @CommandHandler(CreatePostsCommand)
 export class CreatePostsUseCase implements ICommandHandler<CreatePostsCommand> {
   constructor(
-    protected postsRepository: PostsRepository,
-    protected bloggersRepository: BloggersRepository,
+    @Inject('PostsRepositorу') protected postsRepository: PostsRepository,
+    @Inject('BloggersRepositoryQuery')
     protected bloggersRepositoryQuery: BloggersRepositoryQuery,
   ) {}
   //protected usersRepository: UsersRepository){}

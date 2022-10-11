@@ -1,6 +1,9 @@
+import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommand, ICommandHandler } from '@nestjs/cqrs';
+import { InjectConnection } from '@nestjs/mongoose';
 import { UsersRepository } from '../../users/users-repositorySQL';
 import { CommentsRepository } from '../comments-repositorySQL';
+import { IRepositoryComments } from './commentsRepository.interface';
 export class UpdateCommentCommand {
   constructor(public content: string, public commentId: string) {}
 }
@@ -9,8 +12,8 @@ export class UpdateCommentUseCase
   implements ICommandHandler<UpdateCommentCommand>
 {
   constructor(
-    protected commentsRepository: CommentsRepository,
-    protected usersRepository: UsersRepository,
+    @Inject('CommentsRepository')
+    protected commentsRepository: IRepositoryComments,
   ) {}
   async execute(
     command: UpdateCommentCommand,

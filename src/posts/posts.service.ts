@@ -18,14 +18,7 @@ import {
 } from './posts.type';
 
 @Injectable()
-export class PostsService {
-  constructor(
-    protected postsRepository: PostsRepository,
-    protected bloggersRepository: BloggersRepository,
-    protected commentsRepository: CommentsRepository,
-    protected usersRepository: UsersRepository,
-  ) {}
-}
+export class PostsService {}
 //protected usersRepository: UsersRepository){}
 /*  async getPosts(pageNumber: number, pageSize: number): Promise<postsDBType> {
     const { items, totalCount } = await this.postsRepository.getPosts(

@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  Inject,
   NotFoundException,
   Param,
   Post,
@@ -11,6 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
+import { InjectConnection } from '@nestjs/mongoose';
 import { Transform, TransformFnParams } from 'class-transformer';
 import { IsEmail, IsNotEmpty, Length } from 'class-validator';
 
@@ -22,6 +24,7 @@ import { CreateUserCommand } from './use-case/createUserUseCase';
 import { DeleteUserCommand } from './use-case/deleteUserUseCase';
 import { UsersRepositoryQuery } from './users-repositoryMongoQuery';
 import { UsersService } from './users-service';
+import { IRepositoryUsersQuery } from './usersRepository.interface';
 
 class CreateUser {
   @IsNotEmpty()
@@ -40,7 +43,8 @@ class CreateUser {
 export class UsersController {
   constructor(
     protected usersService: UsersService,
-    protected usersRepositoryQuery: UsersRepositoryQuery,
+    @Inject('UsersRepositoryQuery')
+    protected usersRepositoryQuery: IRepositoryUsersQuery,
     private commandBus: CommandBus,
   ) {}
   @UseGuards(AuthBasic)

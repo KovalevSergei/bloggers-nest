@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { BloggersRepository } from '../../bloggers/bloggersSQL.repository';
 import { CommentsRepository } from '../../comments/comments-repositorySQL';
 import {
@@ -22,7 +22,9 @@ export class DeletePostComand {
 }
 @CommandHandler(DeletePostComand)
 export class DeletePostsUseCase implements ICommandHandler<DeletePostComand> {
-  constructor(protected postsRepository: PostsRepository) {}
+  constructor(
+    @Inject('PostsRepositorу') protected postsRepository: PostsRepository,
+  ) {}
   //protected usersRepository: UsersRepository){}
   async execute(command: DeletePostComand): Promise<boolean> {
     return this.postsRepository.deletePosts(command.id);

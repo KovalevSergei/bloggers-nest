@@ -5,6 +5,7 @@ import {
   ForbiddenException,
   Get,
   HttpCode,
+  Inject,
   NotFoundException,
   Param,
   Put,
@@ -12,6 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
+import { InjectConnection } from '@nestjs/mongoose';
 import { Transform, TransformFnParams } from 'class-transformer';
 import { IsIn, IsNotEmpty, Length } from 'class-validator';
 import { Auth } from '../guards/Auth';
@@ -19,6 +21,7 @@ import { UserId } from '../guards/userId';
 import { UsersDBTypeWithId } from '../users/users.type';
 import { CommentsRepositoryQuery } from './comments-repositoryMongoQuery';
 import { CommentsService } from './comments-service';
+import { IRepositoryCommentsQuery } from './use-case/commentsRepository.interface';
 import { DeleteCommentCommand } from './use-case/deleteCommentCommand';
 import { UpdateCommentCommand } from './use-case/updateCommentCommand';
 import { UpdateLikeCommentsCommand } from './use-case/updateLikeCommentsCommand';
@@ -39,7 +42,8 @@ export class CommentsController {
   constructor(
     protected commentsService: CommentsService,
     protected commandBus: CommandBus,
-    protected commentsRepositoryQuery: CommentsRepositoryQuery,
+    @Inject('CommentsRepositoryQuery')
+    protected commentsRepositoryQuery: IRepositoryCommentsQuery,
   ) {}
   @UseGuards(Auth)
   @UseGuards(UserId)

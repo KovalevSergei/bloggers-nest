@@ -7,6 +7,10 @@ import {
 
 import { PostsRepository } from '../posts.repositorySQL';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Inject } from '@nestjs/common';
+import { IPostsRepository } from '../postsRepository.interface';
+import { IRepositoryBloggers } from '../../bloggers/bloggersRepository.interface';
+import { IRepositoryComments } from '../../comments/use-case/commentsRepository.interface';
 export class CreateCommentsCommand {
   constructor(
     public userId: string,
@@ -20,9 +24,10 @@ export class CreateCommentsUseCase
   implements ICommandHandler<CreateCommentsCommand>
 {
   constructor(
-    protected postsRepository: PostsRepository,
-    protected bloggersRepository: BloggersRepository,
-    protected commentsRepository: CommentsRepository,
+    @Inject('PostsRepositorу') protected postsRepository: IPostsRepository,
+
+    @Inject('CommentsRepository')
+    protected commentsRepository: IRepositoryComments,
   ) {}
   //protected usersRepository: UsersRepository){}
 

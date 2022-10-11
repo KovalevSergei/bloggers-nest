@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { UsersRepository } from '../users-repositorySQL';
 import { UsersDBType, UsersDBTypeWithId, usersGetDBType } from '../users.type';
 //import bcrypt from 'bcrypt';
@@ -7,6 +7,7 @@ import { compareAsc, format, add } from 'date-fns';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users-service';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { IRepositoryUsers } from '../usersRepository.interface';
 export class CreateUserCommand {
   constructor(
     public login: string,
@@ -17,7 +18,7 @@ export class CreateUserCommand {
 @CommandHandler(CreateUserCommand)
 export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
   constructor(
-    protected usersRepository: UsersRepository,
+    @Inject('UsersRepository') protected usersRepository: IRepositoryUsers,
     protected usersService: UsersService,
   ) {}
   async execute(command: CreateUserCommand): Promise<UsersDBType> {

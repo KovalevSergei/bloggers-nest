@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpException,
+  Inject,
   Post,
   Req,
   Res,
@@ -31,6 +32,8 @@ import { ConfirmEmailCommand } from './use-case/confirmEmailCommand';
 import { ConfirmCodeCommand } from './use-case/confirmCode2Command';
 import { RefreshTokenFindCommand } from './use-case/refreshTokenFinCommand';
 import { RefreshTokenKillCommand } from './use-case/refreshTokenKillCommand';
+import { InjectConnection } from '@nestjs/mongoose';
+import { IRepositoryUsersQuery } from '../users/usersRepository.interface';
 class AuthBody {
   @IsNotEmpty()
   @Transform(({ value }: TransformFnParams) => value?.trim())
@@ -68,7 +71,8 @@ export class AuthController {
     protected authService: AuthService,
     protected usersServis: UsersService,
     protected jwtService: JwtService,
-    protected usersRepositoryQuery: UsersRepositoryQuery,
+    @Inject('UsersRepositoryQuery')
+    protected usersRepositoryQuery: IRepositoryUsersQuery,
     private commandBus: CommandBus,
   ) {}
   @UseGuards(Mistake429)

@@ -1,9 +1,17 @@
+import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommand, ICommandHandler } from '@nestjs/cqrs';
+import { InjectConnection } from '@nestjs/mongoose';
 import { UsersRepositoryQuery } from '../../users/users-repositoryMongoQuery';
 import { UsersRepository } from '../../users/users-repositorySQL';
 import { UsersDBType } from '../../users/users.type';
+import { IRepositoryUsersQuery } from '../../users/usersRepository.interface';
+import { CommentsRepositoryQuery } from '../comments-repositoryMongoQuery';
 import { CommentsRepository } from '../comments-repositorySQL';
 import { likeComments } from '../comments.type';
+import {
+  IRepositoryComments,
+  IRepositoryCommentsQuery,
+} from './commentsRepository.interface';
 export class UpdateLikeCommentsCommand {
   constructor(
     public commentsId: string,
@@ -16,12 +24,16 @@ export class UpdateLikeCommentsUseCase
   implements ICommandHandler<UpdateLikeCommentsCommand>
 {
   constructor(
-    protected commentsRepository: CommentsRepository,
-    protected usersRepository: UsersRepository,
-    protected usersRepositoryMongoQuery: UsersRepositoryQuery,
+    @Inject('CommentsRepository')
+    protected commentsRepository: IRepositoryComments,
+    @Inject('CommentsRepositoryQuery')
+    protected commentsRepositoryQuery: IRepositoryCommentsQuery,
+
+    @Inject('UsersRepositoryQuery')
+    protected usersRepositoryMongoQuery: IRepositoryUsersQuery,
   ) {}
   async execute(command: UpdateLikeCommentsCommand): Promise<any> {
-    const findLike = await this.commentsRepository.findLikeStatus(
+    const findLike = await this.commentsRepositoryQuery.findLikeStatus(
       command.commentsId,
       command.userId,
     );

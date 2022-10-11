@@ -8,7 +8,6 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-  constructor(protected usersRepository: UsersRepository) {}
   // async createUser(
   //   login: string,
   //   email: string,

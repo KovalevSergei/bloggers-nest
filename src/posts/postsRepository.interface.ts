@@ -17,6 +17,7 @@ export interface IPostsRepository {
   deletePosts: (id: string) => Promise<boolean>;
 
   createLikeStatus: (likePostForm: likePosts) => Promise<boolean>;
+  deleteLike: (postId: string, userId: string) => Promise<boolean>;
 }
 
 export interface IPostsRepositoryQuery {

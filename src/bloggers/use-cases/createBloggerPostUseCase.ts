@@ -1,9 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { PostsRepository } from '../../posts/posts.repositorySQL';
 import { BloggersRepository } from '../bloggersSQL.repository';
 import { postsType } from '../../posts/posts.type';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BloggersRepositoryQuery } from '../bloggers.repositoryQueryMongo';
+import {
+  IRepositoryBloggers,
+  IRepositoryBloggersQuery,
+} from '../bloggersRepository.interface';
+import { IPostsRepository } from '../../posts/postsRepository.interface';
 
 export class CreateBloggersPostCommand {
   constructor(
@@ -19,9 +24,11 @@ export class CreateBloggersPostUseCase
   implements ICommandHandler<CreateBloggersPostCommand>
 {
   constructor(
-    protected bloggersRepository: BloggersRepository,
-    protected postsRepository: PostsRepository, //protected postsService: PostsService,
-    protected bloggersRepositoryQuery: BloggersRepositoryQuery,
+    @Inject('BloggersRepository')
+    protected bloggersRepository: IRepositoryBloggers,
+    @Inject('PostsRepositorу') protected postsRepository: IPostsRepository, //protected postsService: PostsService,
+    @Inject('BloggersRepositoryQuery')
+    protected bloggersRepositoryQuery: IRepositoryBloggersQuery,
   ) {}
 
   async execute(
