@@ -59,6 +59,7 @@ export class BloggersRepositoryNativeQuery implements IRepositoryBloggersQuery {
     WHERE id=$1`,
       [id],
     );
+
     return res[0];
   }
 }
